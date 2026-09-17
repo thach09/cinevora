@@ -59,10 +59,24 @@ Trong phiên bản CLI cũ, mật khẩu tài khoản người dùng được l�
   2. Truyền danh sách mật khẩu mẫu vào script để băm (hash) thành chuỗi BCrypt (định dạng `$2a$10$...`).
   3. Dán cứng chuỗi hash (literal string) vào file `V2__seed_data.sql`:
      ```sql
-     -- Ví dụ seed user admin với BCrypt hash của password demo
-     INSERT INTO users (id, username, password, email, role, is_active, created_at, updated_at)
-     VALUES (1, 'admin', '$2a$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDEF', 'admin@cinevora.com', 'ADMIN', true, NOW(), NOW());
+     -- Ví dụ seed user admin với BCrypt hash của password demo (hash thật đang dùng trong V2)
+     INSERT INTO users (id, username, email, password, full_name, role, is_active, created_at, updated_at)
+     VALUES (1, 'admin', 'admin@gmail.com', '$2a$10$RSRK4WMinzwDDi6hcY19lOHClSIggDv1DUOUB.3VEKnFQss0L4CV6', 'System Admin', 'ADMIN', true, NOW(), NOW());
      ```
+
+### 2.1.1. Công Cụ Sinh Hash Thực Tế Của Phase 1
+
+Quy trình trên đã được hiện thực hóa thành công cụ chạy được **offline, chỉ cần JDK** (không cần
+Maven/Python/Node):
+
+| Công cụ | Vai trò |
+|---|---|
+| `tools/lib/src/org/mindrot/jbcrypt/BCrypt.java` | jBCrypt 0.4 vendor (0 dependency) |
+| `tools/PasswordHashGenerator.java` | Sinh hash mới, `--verify` kiểm tra hash, `--self-test` cho CI |
+| `tools/SeedSqlGenerator.java` | Sinh `V2__seed_data.sql` + **tự quét** xem plaintext có lọt vào SQL không |
+
+Xem [`docs/database/seed-mapping.md`](../database/seed-mapping.md) §6 và
+[`docs/database/migration-runbook.md`](../database/migration-runbook.md) §6.
 
 ### 2.2. Xử Lý Cảnh Báo An Toàn Thông Tin (Git History)
 - **Rủi ro hiện hữu:** File `data/users.txt` (chứa password plaintext) đã được commit vào lịch sử Git ở tag `v1.0-cli-final`. Do lịch sử Git là bất biến (immutable):
