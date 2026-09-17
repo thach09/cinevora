@@ -183,7 +183,7 @@ movie-streaming-management-system/
 │       ├── TextUI.java                    # Box-drawing cho menu CLI (căn lề Unicode)
 │       └── ValidationException.java       # Custom Exception cho lỗi nghiệp vụ
 ├── data/                                  # Dữ liệu lưu trữ (Text Files)
-│   ├── categories.txt                     # 6 thể loại phim
+│   ├── categories.txt                     # 7 thể loại phim (CAT01–CAT07)
 │   ├── movies.txt                         # 60 phim (Việt Nam & Quốc tế)
 │   └── users.txt                          # Tài khoản Admin & Customer mẫu
 ├── run.bat                                # Script chạy nhanh trên Windows (UTF-8)
@@ -228,10 +228,35 @@ java -cp out Main
 
 ### Tài khoản mẫu
 
-| Vai trò | Username | Password |
-|:---|:---|:---|
-| **Admin** | `admin` | `admin123` |
-| **Customer** | `thiettthach09` | `thach123` |
+> **Phase 1 (Database)** đã chuyển toàn bộ dữ liệu mẫu từ `data/*.txt` sang PostgreSQL với mật khẩu
+> băm **BCrypt**. Bảng dưới đây là tài khoản của **hệ thống mới**; chi tiết đầy đủ (11 tài khoản,
+> bảng ánh xạ ID, quy tắc seed) xem [`docs/database/seed-mapping.md`](docs/database/seed-mapping.md).
+
+| Vai trò | Username | Password | Ghi chú |
+|:---|:---|:---|:---|
+| **Admin** | `admin` | `Cinevora@2026` | Toàn quyền quản trị |
+| **Customer** | `thietthach09` | `Cinevora@2026` | Có watchlist + favourites + history |
+| **Customer** | `messi10` | `Cinevora@2026` | Có watchlist + favourites + history |
+| **Customer** | 8 tài khoản còn lại | `Cinevora@2026` | Danh sách trống |
+
+> [!WARNING]
+> **Mật khẩu cũ của bản CLI đã bị loại bỏ hoàn toàn** khỏi hệ thống mới. Bản CLI (v1.0) lưu mật khẩu
+> dạng **plaintext** trong `data/users.txt` — đây là lỗ hổng bảo mật nghiêm trọng và là một trong
+> những lý do chính phải chuyển sang kiến trúc full-stack. Hệ thống mới **chỉ** lưu BCrypt hash
+> (`$2a$10$…`, cost 10, đúng 60 ký tự) và không còn bất kỳ chuỗi plaintext nào.
+>
+> `Cinevora@2026` là mật khẩu **demo cố ý công khai** cho mục đích chấm bài — **bắt buộc đổi** khi
+> triển khai thật (xem Phase 5 trong lộ trình).
+>
+> Bản CLI trong `legacy-cli/` dùng bộ dữ liệu `legacy-cli/data/*.txt` — bộ này **đã bị xoá**
+> (ngày 2026-09-15, sau khi 8/8 PostgreSQL smoke test + ST9 offline PASS) vì chứa mật khẩu plaintext. Cần chạy lại CLI để
+> đối chiếu thì khôi phục trước:
+>
+> ```powershell
+> git checkout $(git log --format=%H -1 --diff-filter=AM -- legacy-cli/data/users.txt) -- legacy-cli/data
+> ```
+>
+> Chi tiết: [`docs/database/seed-mapping.md`](docs/database/seed-mapping.md) §9.
 
 ---
 
@@ -392,7 +417,7 @@ Hệ thống đi kèm bộ dữ liệu mẫu phong phú:
 
 | Loại | Số lượng | Mô tả |
 |:---|:---|:---|
-| **Thể loại** | 6 | Hành Động, Tình Cảm, Kinh Dị, Hài Hước, Khoa Học Viễn Tưởng, Hoạt Hình |
+| **Thể loại** | 7 | Hành Động, Tình Cảm, Kinh Dị, Hài Hước, Khoa Học Viễn Tưởng, Hoạt Hình, Tài Liệu |
 | **Phim** | 60 | Phim Việt Nam & Quốc tế (1990–2024), bao gồm lượt xem và lượt thích |
 | **Tài khoản** | Nhiều | Admin và Customer mẫu với dữ liệu watchlist/favourites/history |
 
@@ -413,3 +438,13 @@ Hệ thống đi kèm bộ dữ liệu mẫu phong phú:
 *Dự án môn Lập trình Hướng đối tượng (OOP) — Xây dựng bằng Pure Java*
 
 </div>
+
+---
+
+## Phase 2 — Spring Boot Backend
+
+Backend REST API đã được khởi tạo tại [`backend/`](backend/README.md), sử dụng
+Java 21, Spring Boot, JPA/Hibernate, PostgreSQL, Flyway, Spring Security và JWT.
+API dùng prefix `/api/v1`; Swagger UI chạy tại `/swagger-ui.html` sau khi backend
+khởi động. Chạy PostgreSQL bằng `docker compose up -d postgres`, sau đó chạy
+`mvn spring-boot:run` trong thư mục `backend/`.
