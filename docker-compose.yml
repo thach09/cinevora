@@ -1,0 +1,88 @@
+# =====================================================================
+# CINEVORA - Docker Compose (Local Development)
+# ---------------------------------------------------------------------
+# Phase 1  : PostgreSQL 16 + Flyway CLI (profile "tools")
+# Phase 5  : se bo sung service backend + frontend vao file nay
+#
+# Su dung:
+#   docker compose up -d postgres                       # chi khoi dong DB
+#   docker compose ps                                    # kiem tra health
+#   docker compose logs -f postgres                      # xem log
+#   docker compose down                                  # tat (giu volume)
+#   docker compose down -v                               # tat + xoa data
+#
+#   # Chay migration (khong can cai Java/Maven tren may host):
+#   docker compose --profile tools run --rm flyway
+#
+#   # Doi chieu trang thai migration:
+#   docker compose --profile tools run --rm flyway info
+#
+# File .env duoc nap tu dong (xem .env.example). KHONG commit file .env.
+# =====================================================================
+
+services:
+  # -------------------------------------------------------------------
+  # PostgreSQL 16 - database chinh cua Cinevora
+  # -------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: cinevora-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cinevora_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      # Ep UTF8 + collation "C" de ket qua deterministic, khong phu thuoc
+      # locale cua may host (PostgreSQL cho phep C collation voi UTF8).
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cinevora_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # healthcheck nay la dieu kien depends_on cua service flyway
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cinevora_db}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - cinevora-net
+
+  # -------------------------------------------------------------------
+  # Flyway CLI - chay migration V1/V2 bang Docker, khong can host tools.
+  # Nam trong profile "tools" nen `docker compose up` KHONG khoi dong no.
+  # -------------------------------------------------------------------
+  flyway:
+    image: flyway/flyway:10-alpine
+    profiles: ["tools"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Mount read-only: Flyway chi doc file SQL, khong ghi nguoc.
+      - ./backend/src/main/resources/db/migration:/flyway/sql:ro
+    environment:
+      # Khai bao tuong minh de tat canh bao cua Flyway 10:
+      #   "Storing migrations in 'sql' is not recommended and default
+      #    scanning of this location may be deprecated in a future release"
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cinevora_db}
+      FLYWAY_USER: ${POSTGRES_USER:-postgres}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    command: migrate
+    networks:
+      - cinevora-net
+
+volumes:
+  cinevora_pgdata:
+    name: cinevora_pgdata
+
+networks:
+  cinevora-net:
+    name: cinevora-net
+    driver: bridge
