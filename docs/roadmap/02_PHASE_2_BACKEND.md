@@ -62,3 +62,11 @@ Chuyển đổi theo hướng Bottom-Up (từ dưới lên) để không làm v�
 - [ ] Hoàn thành toàn bộ REST Controller Endpoint, mapping với Request/Response DTO.
 - [ ] Spring Security + JWT hoạt động (đăng nhập thành công, token truy cập được router bảo vệ).
 - [ ] Chạy được trang tài liệu Swagger UI tại `/swagger-ui.html`.
+
+### Trạng thái triển khai trong repository
+
+Mã nguồn Phase 2 đã được triển khai trong `backend/`: Maven/Spring Boot 3,
+JPA entity + repository cho 7 bảng, service và DTO, REST API `/api/v1`,
+BCrypt/JWT security, Flyway profiles, Swagger/OpenAPI, CSV export và unit test
+cho các business rule cốt lõi. Các checkbox cần PostgreSQL/Docker và Maven
+được giữ lại để xác nhận runtime trên máy triển khai.
