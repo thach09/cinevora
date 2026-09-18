@@ -27,3 +27,9 @@ Spring Boot 3 / Java 21 REST API for the Cinevora web application.
 All application endpoints use the `/api/v1` prefix. Authentication returns a
 JWT; send it as `Authorization: Bearer <token>`. Public reads are movie and
 category browsing. Category/movie mutations and statistics require `ADMIN`.
+
+## Verification checkpoint (2026-09-19)
+
+- `mvn.cmd test`: 2 tests, 0 failures, 0 errors; package completed successfully.
+- Runtime smoke used PostgreSQL 16.15 and Flyway v2; health, Swagger/OpenAPI, JWT login, ADMIN/CUSTOMER authorization, CORS, catalogue reads, user libraries, statistics and temporary CRUD all passed.
+- Full command output and caveats: [`../docs/verification/MASTER_CHECK_PHASE_1_3.md`](../docs/verification/MASTER_CHECK_PHASE_1_3.md).
