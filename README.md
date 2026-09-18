@@ -448,3 +448,14 @@ Java 21, Spring Boot, JPA/Hibernate, PostgreSQL, Flyway, Spring Security và JWT
 API dùng prefix `/api/v1`; Swagger UI chạy tại `/swagger-ui.html` sau khi backend
 khởi động. Chạy PostgreSQL bằng `docker compose up -d postgres`, sau đó chạy
 `mvn spring-boot:run` trong thư mục `backend/`.
+
+## Trạng thái Phase 1–3
+
+Phase 1 (Database), Phase 2 (Spring Boot Backend) và Phase 3 (React Frontend) đã hoàn thành phần implementation và đã được master check bằng lệnh/build/runtime smoke thực tế trên máy phát triển.
+
+- Database: PostgreSQL 16.15, Docker Compose v5.5.1, Flyway v2; database hiện tại giữ các record archive/smoke test, không reset volume.
+- Backend: Java 21, Spring Boot 3.4.5; `mvn.cmd test` đạt 2 tests, 0 failures, 0 errors; package và runtime API smoke đều PASS.
+- Frontend: Vite 6.4.3, React Router 7.18.4; `npm.cmd audit` có 0 vulnerabilities, production build và Vite runtime đều PASS.
+- Báo cáo bằng chứng đầy đủ: [`docs/verification/MASTER_CHECK_PHASE_1_3.md`](docs/verification/MASTER_CHECK_PHASE_1_3.md).
+
+Phase kế tiếp là Phase 4 — Integration Testing.
