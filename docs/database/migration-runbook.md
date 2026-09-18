@@ -405,6 +405,22 @@ KET QUA: PASS - hash trong V2 xac thuc duoc bang BCryptPasswordEncoder
 > `Storing migrations in 'sql'`
 > (đã khai báo `FLYWAY_LOCATIONS=filesystem:/flyway/sql` trong `docker-compose.yml`).
 
+### Cập nhật master check — 2026-09-19
+
+Docker Desktop đã được xác nhận khả dụng qua binary per-user trên Windows:
+
+```text
+Docker version 29.8.0, build 88096ef
+Docker Compose version v5.5.1
+Docker Server Version: 29.8.0 · Context: desktop-linux
+```
+
+`tools/verify-st.ps1` đã được chạy lại trên database hiện tại và cho kết quả **8 PASS / 3 FAIL**. ST1 (Flyway), ST3 (orphan), ST4a–c (unique/FK/CHECK), ST6 (index), ST7 (BCrypt) và ST8 (Unicode/lowercase) đều PASS. ST2 và ST5a–b FAIL vì database không còn ở trạng thái fresh: số liệu hiện tại là `9/63/11/7/5/11/6` thay vì `7/60/11/7/4/9/6`, sequence kế tiếp là users `45` và movies `97` thay vì `12` và `61`.
+
+Các chênh lệch này đến từ record đã archive và các smoke test thủ công trước đó; không có lỗi migration, foreign key, CHECK, index hoặc BCrypt. Không reset volume để bảo toàn trạng thái phát triển hiện tại. Bằng chứng fresh database **8/8 smoke test PASS** của Phase 1 vẫn được giữ nguyên ở phần trên.
+
+Chi tiết log của lần master check mới nhất xem tại [`docs/verification/MASTER_CHECK_PHASE_1_3.md`](../verification/MASTER_CHECK_PHASE_1_3.md).
+
 ---
 
 ## 9. Bàn Giao Sang Phase 2

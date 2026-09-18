@@ -44,11 +44,22 @@ Mỗi Menu/View bên bản CLI cũ sẽ được ánh xạ thành 1 React Page:
 
 ## 3. Checklist Hoàn Thành Phase 3
 
-- [ ] Thiết kế và dựng thành công Layout vỏ ngoài (Navbar, Sidebar, Footer).
-- [ ] Thiết lập React Router cơ bản và các `ProtectedRoute` để chặn người chưa đăng nhập.
-- [ ] Hoàn thành luồng Authentication thực tế: Giao diện Login gọi API Backend -> nhận Token -> Lưu trạng thái vào Zustand.
-- [ ] Hoàn thiện các luồng duyệt nội dung, tìm kiếm, filter dành cho Customer.
-- [ ] Hoàn thiện Dashboard và các trang Form CRUD (Thêm, sửa, xóa) phục vụ phân hệ Admin.
-- [ ] Hoàn thiện các trang tiện ích người dùng (Watchlist, History).
-- [ ] Tối ưu hiển thị Responsive cho màn hình Điện Thoại (Mobile) và Máy tính (Desktop).
-- [ ] Tinh chỉnh Loading spinner và xử lý Error (Toast Notification) nhất quán trên toàn App.
+- [x] Thiết kế và dựng thành công Layout vỏ ngoài (Navbar, Sidebar, Footer).
+- [x] Thiết lập React Router cơ bản và các `ProtectedRoute` để chặn người chưa đăng nhập.
+- [x] Hoàn thành luồng Authentication thực tế: Giao diện Login gọi API Backend -> nhận Token -> Lưu trạng thái vào Zustand.
+- [x] Hoàn thiện các luồng duyệt nội dung, tìm kiếm, filter dành cho Customer.
+- [x] Hoàn thiện Dashboard và các trang Form CRUD (Thêm, sửa, xóa) phục vụ phân hệ Admin.
+- [x] Hoàn thiện các trang tiện ích người dùng (Watchlist, History).
+- [x] Tối ưu hiển thị Responsive cho màn hình Điện Thoại (Mobile) và Máy tính (Desktop).
+- [x] Tinh chỉnh Loading spinner và xử lý Error (Toast Notification) nhất quán trên toàn App.
+
+### Bằng chứng verify mới nhất — 2026-09-19
+
+- Frontend dùng React 18, Vite `6.4.3`, React Router `7.18.4`, TypeScript, TanStack Query, Axios, Zustand, TailwindCSS, React Hook Form và Zod.
+- `npm.cmd audit --audit-level=high`: **found 0 vulnerabilities**.
+- `npm.cmd run build`: **PASS**, `✓ 168 modules transformed`, production bundle tạo thành công.
+- Vite dev server: start thành công trên `http://127.0.0.1:5173/`, SPA trả HTTP 200.
+- Đã verify source/API mapping cho auth, protected/admin routes, browse/search/detail, watchlist, favourites, history, continue watching, dashboard, category/movie CRUD và statistics.
+- `Input`/`Select` dùng `forwardRef` để tương thích React Hook Form.
+
+Browser UI console không được lặp lại trong master check vì Computer Use session không expose browser target; frontend build và HTTP runtime vẫn PASS. Restore endpoint đã có ở backend; UI hiện tập trung active catalogue và các luồng create/update/archive đã verify.

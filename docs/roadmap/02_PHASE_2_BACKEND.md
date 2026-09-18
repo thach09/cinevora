@@ -55,18 +55,27 @@ Chuyển đổi theo hướng Bottom-Up (từ dưới lên) để không làm v�
 
 ## 5. Checklist Hoàn Thành Phase 2
 
-- [ ] Khởi tạo thành công thư mục `backend/` với Spring Boot và chạy được.
-- [ ] Kết nối Database PostgreSQL (chạy Docker local) và chạy Flyway tự động tạo bảng.
-- [ ] Hoàn thành Entity và Repository Layer cho 7 bảng dữ liệu.
-- [ ] Hoàn thành Service Layer và pass bộ Unit Test bảo vệ business logic.
-- [ ] Hoàn thành toàn bộ REST Controller Endpoint, mapping với Request/Response DTO.
-- [ ] Spring Security + JWT hoạt động (đăng nhập thành công, token truy cập được router bảo vệ).
-- [ ] Chạy được trang tài liệu Swagger UI tại `/swagger-ui.html`.
+- [x] Khởi tạo thành công thư mục `backend/` với Spring Boot và chạy được.
+- [x] Kết nối Database PostgreSQL (chạy Docker/local PostgreSQL) và chạy Flyway tự động tạo bảng.
+- [x] Hoàn thành Entity và Repository Layer cho 7 bảng dữ liệu.
+- [x] Hoàn thành Service Layer và pass bộ Unit Test bảo vệ business logic.
+- [x] Hoàn thành toàn bộ REST Controller Endpoint, mapping với Request/Response DTO.
+- [x] Spring Security + JWT hoạt động (đăng nhập thành công, token truy cập được router bảo vệ).
+- [x] Chạy được trang tài liệu Swagger UI tại `/swagger-ui.html`.
 
 ### Trạng thái triển khai trong repository
 
-Mã nguồn Phase 2 đã được triển khai trong `backend/`: Maven/Spring Boot 3,
-JPA entity + repository cho 7 bảng, service và DTO, REST API `/api/v1`,
+Mã nguồn Phase 2 đã được triển khai trong `backend/`: Maven/Spring Boot 3.4.5,
+Java 21, JPA entity + repository cho 7 bảng, service và DTO, REST API `/api/v1`,
 BCrypt/JWT security, Flyway profiles, Swagger/OpenAPI, CSV export và unit test
-cho các business rule cốt lõi. Các checkbox cần PostgreSQL/Docker và Maven
-được giữ lại để xác nhận runtime trên máy triển khai.
+cho các business rule cốt lõi.
+
+### Bằng chứng verify mới nhất — 2026-09-19
+
+- `mvn.cmd test`: 2 tests, 0 failures, 0 errors — BUILD SUCCESS.
+- `mvn.cmd package -DskipTests`: BUILD SUCCESS.
+- Backend runtime trên port `18080`: Tomcat start thành công, kết nối PostgreSQL 16.15, Flyway validate 2 migration và schema version 2 up-to-date.
+- `GET /actuator/health`, Swagger UI, OpenAPI `3.0.1` với `bearerAuth`: HTTP 200.
+- ADMIN/CUSTOMER login, protected authorization, CORS preflight, browse/search/trending, user libraries, statistics và temporary Category/Movie CRUD: PASS.
+
+Test suite hiện có 2 unit test cases; chưa nên diễn giải thành full integration-test coverage. Chi tiết log nằm trong [`MASTER_CHECK_PHASE_1_3.md`](../verification/MASTER_CHECK_PHASE_1_3.md).
