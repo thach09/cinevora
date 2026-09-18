@@ -26,7 +26,11 @@ public class MovieService {
         };
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, property));
-        String cleanQuery = q == null || q.isBlank() ? null : q.trim();
+        // Keep the optional text parameter typed as String when it reaches PostgreSQL.
+        // Binding null in the JPQL `:q is null` branch can be inferred as bytea by
+        // PostgreSQL, which makes lower(:q) fail at runtime. An empty query means
+        // "no text filter" and avoids that driver/type inference issue.
+        String cleanQuery = q == null || q.isBlank() ? "" : q.trim();
         return PageResponse.from(movies.searchActive(cleanQuery, categoryId, minYear, maxYear, minRating, pageable).map(MovieDtos.Response::from));
     }
     @Transactional(readOnly = true) public MovieDtos.Response getActive(Long id) { return MovieDtos.Response.from(movies.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phim " + id))); }
