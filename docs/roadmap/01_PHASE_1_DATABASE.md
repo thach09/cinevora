@@ -71,6 +71,9 @@ Các Model từ dự án CLI được thiết kế lại thành các bảng SQL 
 > `git checkout $(git log --format=%H -1 --diff-filter=AM -- legacy-cli/data/users.txt) -- legacy-cli/data`
 > — xem [`seed-mapping.md`](../database/seed-mapping.md) §9.
 
+> **Master recheck 2026-09-19:** Docker Desktop, PostgreSQL 16.15 và Flyway v2 vẫn hoạt động. Trên database hiện tại, ST1/ST3/ST4/ST6/ST7/ST8 PASS; ST2 và ST5a–b không đạt vì volume giữ record archive/manual và sequence đã tăng so với seed fresh. Không reset volume; bằng chứng fresh 8/8 vẫn được giữ trong runbook và master report.
+> Xem [`docs/database/migration-runbook.md`](../database/migration-runbook.md) và [`docs/verification/MASTER_CHECK_PHASE_1_3.md`](../verification/MASTER_CHECK_PHASE_1_3.md) để đọc log đầy đủ.
+
 ---
 
 ## 4. Sản Phẩm Bàn Giao (Deliverables)
