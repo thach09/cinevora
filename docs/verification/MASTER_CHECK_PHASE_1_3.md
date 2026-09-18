@@ -22,7 +22,7 @@ Tại thời điểm bắt đầu master check:
 ## main...origin/main
 ```
 
-Working tree sạch. Sau khi tạo báo cáo này, thay đổi mới duy nhất dự kiến là file báo cáo này.
+Tại thời điểm bắt đầu, working tree sạch. Sau lượt verify, các file markdown checkpoint đã được cập nhật để phản ánh kết quả và caveat trong báo cáo này.
 
 Môi trường thực tế:
 
@@ -294,7 +294,7 @@ Browser target không khả dụng trong Computer Use session (`iab unavailable`
 2. **npm audit/build cần elevated access** vì registry và cache `node_modules` bị sandbox/permission giới hạn ở lần chạy thường. Khi chạy với access phù hợp, cả audit và build đều PASS.
 3. **Backend test suite hiện có 2 unit test classes / 2 test cases** (`AuthServiceTest`, `CategoryServiceTest`). Kết quả là PASS, nhưng chưa nên diễn giải thành coverage 100% hoặc full integration-test coverage.
 4. Mockito phát cảnh báo self-attaching Java agent trên JDK mới. Đây là warning tương thích tương lai, không làm test fail.
-5. `AGENTS.md` vẫn còn dòng tiến độ cũ ghi Phase 2 “chưa bắt đầu”; source code, commit và bằng chứng runtime hiện tại đã vượt qua trạng thái đó. Báo cáo này là snapshot verification hiện hành.
+5. Các file `AGENTS.md`, roadmap và README checkpoint đã được cập nhật để phản ánh Phase 1–3 đã hoàn tất; Phase 4 vẫn chưa bắt đầu. Báo cáo này là snapshot verification hiện hành.
 
 ## Verdict cuối
 

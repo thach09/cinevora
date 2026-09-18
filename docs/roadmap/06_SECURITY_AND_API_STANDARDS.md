@@ -220,9 +220,15 @@ Việc tinh chỉnh pool size giúp ứng dụng hoạt động bền bỉ, khô
 
 ## 7. Checklist Tiêu Chuẩn Bảo Mật & API
 
-- [ ] Cấu hình CORS đọc từ biến môi trường `CORS_ALLOWED_ORIGINS`, sử dụng `allowedOriginPatterns` và không dùng wildcard `*` khi có credentials.
-- [ ] Xây dựng script hash password bằng BCrypt độc lập, đưa chuỗi hash mẫu mới vào `V2__seed_data.sql` và thêm lưu ý vào README.
-- [ ] Triển khai `ApiResponse<T>` wrapper thống nhất, tích hợp `PageResponse<T>` cho các endpoint phân trang và chốt phương án xử lý lỗi.
-- [ ] Đặt tiền tố `/api/v1/` cho toàn bộ endpoint của hệ thống ngay từ giai đoạn xây dựng Controller.
-- [ ] Tạo tách biệt `application-dev.yml` và `application-prod.yml`, kích hoạt linh hoạt qua `SPRING_PROFILES_ACTIVE`.
-- [ ] Giới hạn HikariCP `maximum-pool-size` về mức 3–5 connections trong profile production để tương thích trơn tru với PostgreSQL Free Tier.
+- [x] Cấu hình CORS đọc từ biến môi trường `CORS_ALLOWED_ORIGINS`, sử dụng `allowedOriginPatterns` và không dùng wildcard `*` khi có credentials.
+- [x] Xây dựng script hash password bằng BCrypt độc lập, đưa chuỗi hash mẫu mới vào `V2__seed_data.sql` và thêm lưu ý vào README.
+- [x] Triển khai `ApiResponse<T>` wrapper thống nhất, tích hợp `PageResponse<T>` cho các endpoint phân trang và chốt phương án xử lý lỗi.
+- [x] Đặt tiền tố `/api/v1/` cho toàn bộ endpoint của hệ thống ngay từ giai đoạn xây dựng Controller.
+- [x] Tạo tách biệt `application-dev.yml` và `application-prod.yml`, kích hoạt linh hoạt qua `SPRING_PROFILES_ACTIVE`.
+- [x] Giới hạn HikariCP `maximum-pool-size` về mức 3–5 connections trong profile production để tương thích trơn tru với PostgreSQL Free Tier.
+
+### Bằng chứng verify — 2026-09-19
+
+Các chuẩn trên đã được đối chiếu với source hiện tại và runtime smoke: CORS preflight từ `http://localhost:5173` trả HTTP 200 với origin hợp lệ; API dùng wrapper `ApiResponse`/`PageResponse` và prefix `/api/v1`; JWT BCrypt login, ADMIN/CUSTOMER authorization, Swagger bearerAuth, profile config và production Hikari pool đều đã được kiểm tra. BCrypt seed tiếp tục đạt parity với Spring Security và `npm.cmd audit` không phát hiện vulnerability.
+
+Log đầy đủ xem tại [`docs/verification/MASTER_CHECK_PHASE_1_3.md`](../verification/MASTER_CHECK_PHASE_1_3.md).
