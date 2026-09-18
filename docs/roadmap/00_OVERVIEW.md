@@ -1,6 +1,6 @@
 # CINEVORA — Tóm Tắt Tổng Quan (Executive Summary)
 
-Tài liệu này ghi nhận lại toàn bộ kế hoạch chuyển đổi dự án Cinevora từ kiến trúc CLI (Command Line Interface) sang một Full-Stack Web Application hiện đại. 
+Tài liệu này ghi nhận lại toàn bộ kế hoạch chuyển đổi dự án Cinevora từ kiến trúc CLI (Command Line Interface) sang một Full-Stack Web Application hiện đại.
 
 Dự án bản CLI đã hoàn thiện cực kỳ tốt nền tảng OOP cốt lõi, bao gồm đầy đủ 4 tính chất OOP, triển khai các thuật toán (Bubble Sort, Linear Search, Custom Stack cho Undo/Redo) và validate 3 lớp chặt chẽ. Nền tảng này cho phép chúng ta tái sử dụng phần lớn Business Logic.
 
@@ -10,24 +10,24 @@ Mục tiêu của kế hoạch là tạo ra một dự án Web hoàn chỉnh, pu
 
 ## 1. Quyết Định Công Nghệ Đã Chốt (Tech Stack)
 
-| Thành phần | Công nghệ | Lý do chọn |
-|---|---|---|
-| **Backend** | **Spring Boot 3.x (Java 21 LTS)** | Tận dụng lại 90% kiến thức OOP và code logic từ dự án cũ; hệ sinh thái Java Backend mạnh mẽ. |
-| **Database** | **PostgreSQL 16** | RDBMS mã nguồn mở mạnh mẽ, dễ quản lý schema và miễn phí trên nhiều Cloud. |
-| **ORM** | **Spring Data JPA + Hibernate** | Ánh xạ Entity tự nhiên, giảm boilerplate code. |
-| **Frontend** | **React 18 + Vite + TypeScript** | Chuẩn công nghiệp hiện tại, hệ sinh thái thư viện phong phú. |
-| **API Style** | **REST + OpenAPI 3.0 (Swagger)** | Giao tiếp chuẩn mực, có công cụ gen docs tự động. |
-| **Auth** | **Spring Security + JWT** | Xác thực stateless, cực kỳ phù hợp cho ứng dụng REST. |
-| **Containerization**| **Docker + Docker Compose** | Đồng nhất môi trường từ Dev đến Production. |
-| **CI/CD** | **GitHub Actions** | Tích hợp sẵn với repo, miễn phí mạnh mẽ. |
-| **Hosting** | **Render/Railway (BE/DB)** & **Vercel/Netlify (FE)** | Có free tier, tốc độ deploy nhanh chóng. |
-| **Schema DB** | **Flyway** | Quản lý version database, dễ dàng migrate giữa các môi trường. |
+| Thành phần           | Công nghệ                                            | Lý do chọn                                                                                   |
+| -------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Backend**          | **Spring Boot 3.x (Java 21 LTS)**                    | Tận dụng lại 90% kiến thức OOP và code logic từ dự án cũ; hệ sinh thái Java Backend mạnh mẽ. |
+| **Database**         | **PostgreSQL 16**                                    | RDBMS mã nguồn mở mạnh mẽ, dễ quản lý schema và miễn phí trên nhiều Cloud.                   |
+| **ORM**              | **Spring Data JPA + Hibernate**                      | Ánh xạ Entity tự nhiên, giảm boilerplate code.                                               |
+| **Frontend**         | **React 18 + Vite + TypeScript**                     | Chuẩn công nghiệp hiện tại, hệ sinh thái thư viện phong phú.                                 |
+| **API Style**        | **REST + OpenAPI 3.0 (Swagger)**                     | Giao tiếp chuẩn mực, có công cụ gen docs tự động.                                            |
+| **Auth**             | **Spring Security + JWT**                            | Xác thực stateless, cực kỳ phù hợp cho ứng dụng REST.                                        |
+| **Containerization** | **Docker + Docker Compose**                          | Đồng nhất môi trường từ Dev đến Production.                                                  |
+| **CI/CD**            | **GitHub Actions**                                   | Tích hợp sẵn với repo, miễn phí mạnh mẽ.                                                     |
+| **Hosting**          | **Render/Railway (BE/DB)** & **Vercel/Netlify (FE)** | Có free tier, tốc độ deploy nhanh chóng.                                                     |
+| **Schema DB**        | **Flyway**                                           | Quản lý version database, dễ dàng migrate giữa các môi trường.                               |
 
 ---
 
 ## 2. Chiến Lược Tái Sử Dụng Code (Reuse Mapping)
 
-*Nguyên tắc cốt lõi: Business Logic là bất biến theo giao diện. Chỉ tầng Presentation (View) và tầng Persistence (Repository implement) thay đổi.*
+_Nguyên tắc cốt lõi: Business Logic là bất biến theo giao diện. Chỉ tầng Presentation (View) và tầng Persistence (Repository implement) thay đổi._
 
 - Thư mục `model/`: **Giữ lại ~95%**. Bổ sung thêm các annotation JPA (e.g. `@Entity`, `@Id`, `@ManyToOne`) và di chuyển sang package `entity/`.
 - Thư mục `controller/`: **Giữ lại ~90% logic**. Đổi tên thành các class `*Service` và thay đổi lời gọi lưu trữ file sang gọi Spring Data JPA.
@@ -47,6 +47,7 @@ Dự án sẽ chuyển đổi sang mô hình **Monorepo** với sơ đồ tươn
 3. **Database**: PostgreSQL kết nối qua JDBC (Hibernate).
 
 Cấu trúc cây thư mục định hướng:
+
 ```text
 cinevora/
 ├── legacy-cli/          # Lưu trữ code CLI cũ (không deploy, chỉ để tham khảo)
@@ -63,13 +64,25 @@ cinevora/
 
 Tổng thời gian thực hiện ước tính là **7–9 tuần** làm part-time.
 
-- **PHASE 0:** Cleanup & Chuẩn bị Repo ✅ *(Đã hoàn thành)*
-- **[PHASE 1 (1 tuần): Thiết Kế Database](./01_PHASE_1_DATABASE.md)**
-- **[PHASE 2 (2-3 tuần): Xây Dựng Backend (Spring Boot)](./02_PHASE_2_BACKEND.md)**
-- **[PHASE 3 (2-3 tuần): Xây Dựng Frontend (React)](./03_PHASE_3_FRONTEND.md)**
+- **PHASE 0:** Cleanup & Chuẩn bị Repo ✅ _(Đã hoàn thành)_
+- **[PHASE 1 (1 tuần): Thiết Kế Database](./01_PHASE_1_DATABASE.md)** ✅ _(Đã hoàn thành và verify)_
+- **[PHASE 2 (2-3 tuần): Xây Dựng Backend (Spring Boot)](./02_PHASE_2_BACKEND.md)** ✅ _(Đã hoàn thành và verify)_
+- **[PHASE 3 (2-3 tuần): Xây Dựng Frontend (React)](./03_PHASE_3_FRONTEND.md)** ✅ _(Đã hoàn thành và verify)_
 - **[PHASE 4 (1 tuần): Tích Hợp & Testing](./04_PHASE_4_INTEGRATION_TESTING.md)**
 - **[PHASE 5 (1 tuần): DevOps & Deployment](./05_PHASE_5_DEVOPS_DEPLOYMENT.md)**
 - **[Security & API Standards (Cross-cutting)](./06_SECURITY_AND_API_STANDARDS.md)**
+
+### Checkpoint hiện tại — 2026-09-19
+
+Phase 1–3 đã hoàn tất ở local và có bằng chứng thực thi trong
+[MASTER_CHECK_PHASE_1_3.md](../verification/MASTER_CHECK_PHASE_1_3.md):
+
+- Database/Flyway: schema version 2, PostgreSQL 16.15; fresh database trước đó đạt 8/8 smoke test và ST9 offline PASS.
+- Backend: startup, Flyway/JPA, JWT authorization, Swagger bearer scheme, CORS, CRUD và API smoke PASS; mvn test đạt 2 tests, 0 failures.
+- Frontend: npm audit = 0 vulnerabilities; Vite 6.4.3 production build PASS; Vite dev server trả HTTP 200.
+- Phase 4 là công việc tiếp theo: tích hợp end-to-end, test controller/UI và regression test trên DB fresh.
+
+Database local hiện tại không fresh vì giữ lại các record smoke/manual đã archive; không reset volume trong master check để tránh xoá dữ liệu local.
 
 ---
 
@@ -80,4 +93,3 @@ Tổng thời gian thực hiện ước tính là **7–9 tuần** làm part-tim
 3. **State Undo/Redo:** RAM-based trên CLI sẽ khó duy trì trên web stateless. Sẽ cần đưa logic sang state của React trên Frontend hoặc lưu tạm Redis.
 
 Xem chi tiết cách xử lý các rủi ro này tại 06_SECURITY_AND_API_STANDARDS.md.
-

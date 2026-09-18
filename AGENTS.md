@@ -53,9 +53,19 @@ như nguyên vẹn, chỉ thêm annotation JPA.
 ## Tiến độ hiện tại
 
 - Phase 0 (Cleanup repo) — xong.
-- Phase 1 (Database) — xong, đã verify bằng 8 smoke test thật trên Docker
-  PostgreSQL (không phải suy đoán).
-- Phase 2 (Backend Spring Boot) — chưa bắt đầu, là việc tiếp theo.
+- Phase 1 (Database) — xong. Offline verifier PASS; database fresh đã từng đạt
+  8/8 PostgreSQL smoke test thật trên Docker. Lượt master check 2026-09-19
+  xác nhận Docker Desktop/PostgreSQL 16.15, Flyway version 2, ST1/ST3/ST4/ST6/ST7/ST8 PASS;
+  ST2/ST5 phụ thuộc DB fresh và không chạy lại kết quả seed vì database hiện giữ
+  các record smoke/manual đã archive.
+- Phase 2 (Backend Spring Boot) — xong và đã verify runtime. Spring Boot 3.4.5,
+  Java 21, REST API /api/v1, JWT/Security, Swagger/OpenAPI, Flyway/JPA,
+  CORS và CRUD smoke đều PASS; backend tests hiện có 2/2 test PASS.
+- Phase 3 (Frontend React) — xong và đã verify. Vite 6.4.3, React Router 7.18.4,
+  production build PASS, npm audit báo 0 vulnerabilities, Vite runtime HTTP 200.
+- Phase 4 (Integration & Testing) — chưa bắt đầu; là phase tiếp theo.
+
+Báo cáo master hiện tại: docs/verification/MASTER_CHECK_PHASE_1_3.md.
 
 ## Quy tắc làm việc bắt buộc
 
