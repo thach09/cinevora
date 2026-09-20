@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/authStore'
 import type {
   ApiResponse, AuthResponse, Category, ContinueEntry, HistoryEntry, LoginRequest,
   Movie, MovieQuery, MovieRef, PageResponse, RegisterRequest, Statistics, User, Profile, AccountSession,
+  MoviePreference, PreferenceSignal, Suggestion, SearchEntry, PopularSearch, HomeResponse,
 } from '../types/api'
 
 export const api = axios.create({
@@ -78,6 +79,7 @@ export const movieApi = {
   update: (id: number, payload: MoviePayload) => dataOf<Movie>(api.put(`/movies/${id}`, payload)),
   remove: (id: number) => dataOf<void>(api.delete(`/movies/${id}`)),
   restore: (id: number) => dataOf<Movie>(api.patch(`/movies/${id}/restore`)),
+  suggestions: (q: string, limit = 6) => dataOf<Suggestion[]>(api.get('/movies/suggestions', { params: { q, limit } })),
 }
 
 export interface MoviePayload {
@@ -111,6 +113,18 @@ export const userDataApi = {
   })),
   removeContinue: (movieId: number) => dataOf<void>(api.delete(`/users/me/continue-watching/${movieId}`)),
   exportHistory: () => api.get('/users/me/history/export', { responseType: 'blob' }),
+}
+
+export const discoveryApi = {
+  preferences: () => dataOf<MoviePreference[]>(api.get('/users/me/preferences')),
+  setPreference: (movieId: number, signal: PreferenceSignal) => dataOf<MoviePreference>(api.put(`/users/me/preferences/${movieId}`, { signal })),
+  removePreference: (movieId: number) => dataOf<void>(api.delete(`/users/me/preferences/${movieId}`)),
+  recommendations: (limit = 12) => dataOf<Movie[]>(api.get('/recommendations', { params: { limit } })),
+  home: () => dataOf<HomeResponse>(api.get('/home')),
+  recentSearches: () => dataOf<SearchEntry[]>(api.get('/users/me/search-history')),
+  saveSearch: (q: string) => dataOf<void>(api.post('/users/me/search-history', null, { params: { q } })),
+  clearSearches: () => dataOf<void>(api.delete('/users/me/search-history')),
+  popularSearches: (limit = 6) => dataOf<PopularSearch[]>(api.get('/movies/popular-searches', { params: { limit } })),
 }
 
 export const mediaApi = {

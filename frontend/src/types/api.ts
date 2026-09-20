@@ -119,3 +119,10 @@ export interface Statistics {
 
 export interface Profile { id: number; name: string; avatarUrl: string | null; defaultProfile: boolean }
 export interface AccountSession { id: number; userAgent: string | null; ipAddress: string | null; createdAt: string; lastUsedAt: string; expiresAt: string }
+
+export type PreferenceSignal = 'LIKE' | 'DISLIKE'
+export interface MoviePreference { movieId: number; signal: PreferenceSignal }
+export interface Suggestion { id: number; title: string; thumbnailUrl: string | null; releaseYear: number }
+export interface SearchEntry { id: number; query: string; searchedAt: string }
+export interface PopularSearch { query: string; count: number }
+export interface HomeResponse { topPicks: Movie[]; trending: Movie[]; continueWatching: ContinueEntry[] }

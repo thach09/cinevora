@@ -39,6 +39,6 @@ export function PosterArtwork({ src, alt, title, className = '' }: { src?: strin
   )
 }
 
-export function MovieGrid({ movies }: { movies: Movie[] }) {
-  return <div className="movie-grid">{movies.map((movie) => <MovieCard key={movie.id} movie={movie} />)}</div>
+export function MovieGrid({ movies }: { movies: CardMovie[] }) {
+  return <div className="movie-grid">{movies.map((movie) => <MovieCard key={isMovie(movie) ? movie.id : movie.movieId} movie={movie} />)}</div>
 }

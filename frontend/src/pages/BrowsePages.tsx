@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { categoryApi, getApiError, movieApi } from '../lib/api'
+import { categoryApi, discoveryApi, getApiError, movieApi } from '../lib/api'
 import { MovieGrid } from '../components/MovieCard'
 import { Button, EmptyState, QueryError, Spinner } from '../components/ui'
 import { formatNumber } from '../lib/format'
@@ -12,6 +12,7 @@ export function BrowseMoviePage() {
   const categories = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list })
   const movies = useQuery({ queryKey: ['movies', 'browse', page], queryFn: () => movieApi.list({ page, size: 12, sort: 'popularity', direction: 'desc' }) })
   const trending = useQuery({ queryKey: ['movies', 'trending'], queryFn: () => movieApi.trending({ size: 5 }) })
+  const home = useQuery({ queryKey: ['home'], queryFn: discoveryApi.home, staleTime: 60_000 })
 
   if (movies.isLoading) return <Spinner label="Curating your cinema" />
   if (movies.isError) return <QueryError message={getApiError(movies.error)} />
@@ -44,6 +45,8 @@ export function BrowseMoviePage() {
         </div>
         {movies.data?.content.length ? <MovieGrid movies={movies.data.content} /> : <EmptyState title="The catalogue is quiet" description="There are no active movies to show yet." />}
       </section>
+      {home.data?.topPicks.length ? <section className="space-y-6"><div className="section-heading"><div><p className="eyebrow">For your profile</p><h2 className="section-title">Top picks for you</h2></div><span className="section-note">Updated from your taste</span></div><MovieGrid movies={home.data.topPicks} /></section> : null}
+      {home.data?.continueWatching.length ? <section className="space-y-6"><div className="section-heading"><div><p className="eyebrow">Pick up where you left off</p><h2 className="section-title">Continue watching</h2></div><Link className="text-sm font-semibold text-pink-300 transition hover:text-pink-200" to="/continue-watching">View all <span aria-hidden="true">-&gt;</span></Link></div><MovieGrid movies={home.data.continueWatching.map((entry) => ({ movieId: entry.movieId, title: entry.title, thumbnailUrl: entry.thumbnailUrl, addedAt: entry.updatedAt }))} /></section> : null}
       <Pagination page={page} totalPages={movies.data?.totalPages || 0} onChange={setPage} />
     </div>
   )
@@ -63,11 +66,21 @@ export function SearchPage() {
   const [minRating, setMinRating] = useState('')
   const [sort, setSort] = useState('popularity')
   const [page, setPage] = useState(0)
+  const [suggestionQuery, setSuggestionQuery] = useState(q.trim())
   const categories = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list })
+  const recentSearches = useQuery({ queryKey: ['search-history'], queryFn: discoveryApi.recentSearches })
+  const popularSearches = useQuery({ queryKey: ['popular-searches'], queryFn: () => discoveryApi.popularSearches(6) })
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSuggestionQuery(q.trim()), 300)
+    return () => window.clearTimeout(timer)
+  }, [q])
+  const suggestions = useQuery({ queryKey: ['movie-suggestions', suggestionQuery], queryFn: () => movieApi.suggestions(suggestionQuery), enabled: suggestionQuery.length >= 2, staleTime: 30_000 })
   const query = { q: q || undefined, categoryId: categoryId ? Number(categoryId) : undefined, minRating: minRating ? Number(minRating) : undefined, page, size: 12, sort, direction: 'desc' as const }
   const movies = useQuery({ queryKey: ['movies', 'search', query], queryFn: () => movieApi.list(query) })
+  const rememberSearch = () => { const value = q.trim(); if (value.length >= 2) { void discoveryApi.saveSearch(value).then(() => recentSearches.refetch()) } }
   const submit = (event: FormEvent) => {
     event.preventDefault()
+    rememberSearch()
     setPage(0)
     const params = new URLSearchParams()
     if (q) params.set('q', q)
@@ -79,12 +92,14 @@ export function SearchPage() {
     <div className="space-y-8">
       <div><p className="eyebrow">The whole catalogue</p><h2 className="section-title mt-1">Search and discover</h2><p className="mt-2 max-w-2xl text-slate-400">Find a new favourite by title, category, rating, or just a feeling.</p></div>
       <form className="search-panel" onSubmit={submit}>
+        {suggestions.data?.length && suggestionQuery.length >= 2 ? <div className="suggestion-menu suggestion-menu-inline" role="listbox">{suggestions.data.map((suggestion) => <button type="button" key={suggestion.id} className="suggestion-item" onClick={() => { void discoveryApi.saveSearch(suggestion.title); navigate(`/movies/${suggestion.id}`) }}><span>{suggestion.title}</span><small>{suggestion.releaseYear}</small></button>)}</div> : null}
         <div className="search-input-wrap"><span aria-hidden="true">⌕</span><input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search by title, director, or actor" aria-label="Search movies" /></div>
         <select className="input filter-input" value={categoryId} onChange={(event) => { setCategoryId(event.target.value); setPage(0) }} aria-label="Filter by category"><option value="">All categories</option>{categories.data?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
         <select className="input filter-input" value={minRating} onChange={(event) => { setMinRating(event.target.value); setPage(0) }} aria-label="Filter by rating"><option value="">Any rating</option><option value="7">7+ rating</option><option value="8">8+ rating</option><option value="9">9+ rating</option></select>
         <select className="input filter-input" value={sort} onChange={(event) => { setSort(event.target.value); setPage(0) }} aria-label="Sort results"><option value="popularity">Most popular</option><option value="rating">Top rated</option><option value="releaseYear">Newest</option><option value="title">Title A-Z</option></select>
         <Button type="submit">Search</Button>
       </form>
+      {!q.trim() && <div className="search-discovery-row"><div><span className="eyebrow">Recent searches</span><div className="search-chips">{recentSearches.data?.length ? recentSearches.data.slice(0, 6).map((entry) => <button key={entry.id} className="search-chip" type="button" onClick={() => { setQ(entry.query); setPage(0) }}>{entry.query}</button>) : <span className="text-sm text-slate-500">Your recent searches will appear here.</span>}</div></div><div><span className="eyebrow">Popular now</span><div className="search-chips">{popularSearches.data?.map((entry) => <button key={entry.query} className="search-chip" type="button" onClick={() => { setQ(entry.query); setPage(0) }}>{entry.query} <small>{entry.count}</small></button>)}</div></div></div>}
       {movies.isLoading ? <Spinner label="Searching the catalogue" /> : movies.isError ? <QueryError message={getApiError(movies.error)} /> : movies.data?.content.length ? <><MovieGrid movies={movies.data.content} /><Pagination page={page} totalPages={movies.data.totalPages} onChange={setPage} /></> : <EmptyState title="No matches yet" description="Try a broader search or remove one of the filters." />}
     </div>
   )
