@@ -5,6 +5,7 @@ import { categoryApi, discoveryApi, getApiError, movieApi } from '../lib/api'
 import { MovieGrid } from '../components/MovieCard'
 import { Button, EmptyState, QueryError, Spinner } from '../components/ui'
 import { formatNumber } from '../lib/format'
+import { Seo } from '../components/Seo'
 
 export function BrowseMoviePage() {
   const [page, setPage] = useState(0)
@@ -20,6 +21,7 @@ export function BrowseMoviePage() {
   const featured = trending.data?.content[0] || movies.data?.content[0]
   return (
     <div className="space-y-12">
+      <Seo title="Browse movies · Cinevora" description="Browse Cinevora movies by genre, popularity and mood. Find a great story quickly with clear categories and poster-first discovery." />
       <section className="hero-banner">
         <HeroArtwork movie={featured} />
         <div className="hero-copy">
@@ -90,6 +92,7 @@ export function SearchPage() {
 
   return (
     <div className="space-y-8">
+      <Seo title={q ? `Search results for ${q} · Cinevora` : 'Search movies · Cinevora'} description="Search Cinevora by title, director, actor or category with fast autocomplete and clear movie results." />
       <div><p className="eyebrow">The whole catalogue</p><h2 className="section-title mt-1">Search and discover</h2><p className="mt-2 max-w-2xl text-slate-400">Find a new favourite by title, category, rating, or just a feeling.</p></div>
       <form className="search-panel" onSubmit={submit}>
         {suggestions.data?.length && suggestionQuery.length >= 2 ? <div className="suggestion-menu suggestion-menu-inline" role="listbox">{suggestions.data.map((suggestion) => <button type="button" key={suggestion.id} className="suggestion-item" onClick={() => { void discoveryApi.saveSearch(suggestion.title); navigate(`/movies/${suggestion.id}`) }}><span>{suggestion.title}</span><small>{suggestion.releaseYear}</small></button>)}</div> : null}

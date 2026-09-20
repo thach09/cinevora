@@ -52,7 +52,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
   const pageName = exactMatch?.[0] || nestedMatch?.[0] || "Cinevora";
 
   useEffect(() => {
-    document.title = `${pageName} · Cinevora`;
+    if (!document.querySelector('[data-seo-page="true"]')) document.title = `${pageName} · Cinevora`;
   }, [pageName]);
 
   useEffect(() => {

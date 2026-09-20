@@ -8,6 +8,7 @@ import { PosterArtwork } from '../components/MovieCard'
 import { VideoPlayer } from '../components/VideoPlayer'
 import { useToast } from '../components/ToastProvider'
 import { formatNumber } from '../lib/format'
+import { Seo } from '../components/Seo'
 
 export function MovieDetailPage() {
   const { id } = useParams()
@@ -56,6 +57,7 @@ export function MovieDetailPage() {
   }
 
   return <div className="space-y-8">
+    <Seo title={`${item.title} · Cinevora`} description={item.description || `Watch ${item.title} on Cinevora.`} image={item.thumbnailUrl} jsonLd={{ '@context': 'https://schema.org', '@type': 'Movie', name: item.title, description: item.description || undefined, image: item.thumbnailUrl || undefined, dateCreated: String(item.releaseYear), aggregateRating: { '@type': 'AggregateRating', ratingValue: item.rating, bestRating: 10, ratingCount: Math.max(item.views, 1) } }} />
     <Link to="/browse" className="back-link">Back to browse</Link>
     <section className="detail-hero">
       <div className="detail-poster"><PosterArtwork src={item.thumbnailUrl} alt={`${item.title} poster`} title={item.title} /></div>
