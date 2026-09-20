@@ -39,12 +39,12 @@ React Router  7.18.4 (package-lock)
 
 ## Phase 0 — Cleanup và chuẩn bị repo
 
-| Kiểm tra | Kết quả | Bằng chứng |
-|---|---:|---|
-| Monorepo có `backend/`, `frontend/`, `legacy-cli/`, `docs/`, `tools/` | PASS | `git status`, `rg --files` |
-| Plaintext seed data không còn trong working tree | PASS | Phase 1 verifier: `Plaintext leak : 742 file quet, 0 leak` |
-| Có thể truy nguyên `legacy-cli/data/users.txt` từ Git history | PASS | Phase 1 verifier tìm thấy commit `078b5114d9b1617572b56062fc70147f4ac95bfc` |
-| Không sửa `legacy-cli/` trong các commit Phase 1–3 | PASS | `git show --name-status` và source tree hiện tại |
+| Kiểm tra                                                              | Kết quả | Bằng chứng                                                                  |
+| --------------------------------------------------------------------- | ------: | --------------------------------------------------------------------------- |
+| Monorepo có `backend/`, `frontend/`, `legacy-cli/`, `docs/`, `tools/` |    PASS | `git status`, `rg --files`                                                  |
+| Plaintext seed data không còn trong working tree                      |    PASS | Phase 1 verifier: `Plaintext leak : 742 file quet, 0 leak`                  |
+| Có thể truy nguyên `legacy-cli/data/users.txt` từ Git history         |    PASS | Phase 1 verifier tìm thấy commit `078b5114d9b1617572b56062fc70147f4ac95bfc` |
+| Không sửa `legacy-cli/` trong các commit Phase 1–3                    |    PASS | `git show --name-status` và source tree hiện tại                            |
 
 ## Phase 1 — Database và Flyway
 
@@ -158,21 +158,21 @@ Application availability state ... ACCEPTING_TRAFFIC
 
 HTTP smoke thực tế:
 
-| Luồng | Kết quả |
-|---|---:|
-| `GET /actuator/health` | HTTP 200 |
-| `GET /swagger-ui.html` | HTTP 200 sau redirect nội bộ |
-| `GET /v3/api-docs` | HTTP 200 |
-| OpenAPI version | `3.0.1` |
-| Bearer JWT scheme | Có `bearerAuth` |
-| OpenAPI paths | 19 |
-| `GET /api/v1/movies?page=0&size=2` | HTTP 200 |
-| Customer login | success, role `CUSTOMER` |
-| Admin login | success, role `ADMIN` |
-| Anonymous `GET /api/v1/statistics` | HTTP 403 |
-| Customer `GET /api/v1/users/me/watchlist` | HTTP 200 |
-| Customer `POST /api/v1/categories` | HTTP 403 |
-| Admin `GET /api/v1/categories` | HTTP 200 |
+| Luồng                                     |                                                 Kết quả |
+| ----------------------------------------- | ------------------------------------------------------: |
+| `GET /actuator/health`                    |                                                HTTP 200 |
+| `GET /swagger-ui.html`                    |                            HTTP 200 sau redirect nội bộ |
+| `GET /v3/api-docs`                        |                                                HTTP 200 |
+| OpenAPI version                           |                                                 `3.0.1` |
+| Bearer JWT scheme                         |                                         Có `bearerAuth` |
+| OpenAPI paths                             |                                                      19 |
+| `GET /api/v1/movies?page=0&size=2`        |                                                HTTP 200 |
+| Customer login                            |                                success, role `CUSTOMER` |
+| Admin login                               |                                   success, role `ADMIN` |
+| Anonymous `GET /api/v1/statistics`        |                                                HTTP 403 |
+| Customer `GET /api/v1/users/me/watchlist` |                                                HTTP 200 |
+| Customer `POST /api/v1/categories`        |                                                HTTP 403 |
+| Admin `GET /api/v1/categories`            |                                                HTTP 200 |
 | CORS preflight từ `http://localhost:5173` | HTTP 200, trả `Access-Control-Allow-Origin` đúng origin |
 
 Các read flows được gọi lại bằng API thật và đều HTTP 200:
