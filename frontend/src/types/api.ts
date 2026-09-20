@@ -20,6 +20,7 @@ export interface User {
   fullName: string
   role: 'ADMIN' | 'CUSTOMER'
   active: boolean
+  emailVerified: boolean
 }
 
 export interface AuthResponse {
@@ -27,6 +28,9 @@ export interface AuthResponse {
   tokenType: string
   expiresInSeconds: number
   user: User
+  refreshToken: string
+  emailVerified: boolean
+  emailVerificationToken?: string | null
 }
 
 export interface LoginRequest {
@@ -112,3 +116,6 @@ export interface Statistics {
   totalFavourites: number
   topMovies: Movie[]
 }
+
+export interface Profile { id: number; name: string; avatarUrl: string | null; defaultProfile: boolean }
+export interface AccountSession { id: number; userAgent: string | null; ipAddress: string | null; createdAt: string; lastUsedAt: string; expiresAt: string }

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 import type {
   ApiResponse, AuthResponse, Category, ContinueEntry, HistoryEntry, LoginRequest,
-  Movie, MovieQuery, MovieRef, PageResponse, RegisterRequest, Statistics,
+  Movie, MovieQuery, MovieRef, PageResponse, RegisterRequest, Statistics, User, Profile, AccountSession,
 } from '../types/api'
 
 export const api = axios.create({
@@ -13,14 +13,24 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token
   if (token) config.headers.Authorization = `Bearer ${token}`
+  const profileId = useAuthStore.getState().activeProfileId
+  if (profileId) config.headers['X-Profile-Id'] = String(profileId)
   return config
 })
 
+let refreshPromise: Promise<string> | null = null
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) useAuthStore.getState().logout()
-    return Promise.reject(error)
+    const request = error.config as typeof error.config & { _retry?: boolean } | undefined
+    const isRefresh = request?.url?.includes('/auth/refresh') || request?.url?.includes('/auth/login')
+    if (error.response?.status !== 401 || !request || request._retry || isRefresh || !useAuthStore.getState().refreshToken) {
+      if (error.response?.status === 401 && isRefresh) useAuthStore.getState().logout()
+      return Promise.reject(error)
+    }
+    request._retry = true
+    refreshPromise ||= authApi.refresh(useAuthStore.getState().refreshToken!).then((auth) => { useAuthStore.getState().setAuth(auth); return auth.token }).finally(() => { refreshPromise = null })
+    return refreshPromise.then((token) => { request.headers.Authorization = `Bearer ${token}`; return api(request) }).catch((refreshError) => { useAuthStore.getState().logout(); return Promise.reject(refreshError) })
   },
 )
 
@@ -29,6 +39,27 @@ const dataOf = async <T>(request: Promise<{ data: ApiResponse<T> }>) => (await r
 export const authApi = {
   login: (payload: LoginRequest) => dataOf<AuthResponse>(api.post('/auth/login', payload)),
   register: (payload: RegisterRequest) => dataOf<AuthResponse>(api.post('/auth/register', payload)),
+  refresh: (refreshToken: string) => dataOf<AuthResponse>(api.post('/auth/refresh', { refreshToken })),
+  logout: (refreshToken: string | null) => dataOf<void>(api.post('/auth/logout', { refreshToken })),
+  forgotPassword: (email: string) => dataOf<{ message: string; developmentToken?: string | null }>(api.post('/auth/forgot-password', { email })),
+  resetPassword: (token: string, newPassword: string) => dataOf<void>(api.post('/auth/reset-password', { token, newPassword })),
+  verifyEmail: (token: string) => dataOf<void>(api.post('/auth/verify-email', { token })),
+}
+
+export const accountApi = {
+  me: () => dataOf<User>(api.get('/users/me')),
+  update: (payload: { fullName: string; email: string }) => dataOf<User>(api.put('/users/me', payload)),
+  changePassword: (payload: { currentPassword: string; newPassword: string }) => dataOf<void>(api.put('/users/me/password', payload)),
+  sessions: () => dataOf<AccountSession[]>(api.get('/users/me/sessions')),
+  revokeSession: (id: number) => dataOf<void>(api.delete(`/users/me/sessions/${id}`)),
+}
+
+export const profileApi = {
+  list: () => dataOf<Profile[]>(api.get('/users/me/profiles')),
+  create: (payload: { name: string; avatarUrl?: string }) => dataOf<Profile>(api.post('/users/me/profiles', payload)),
+  update: (id: number, payload: { name: string; avatarUrl?: string }) => dataOf<Profile>(api.put(`/users/me/profiles/${id}`, payload)),
+  remove: (id: number) => dataOf<void>(api.delete(`/users/me/profiles/${id}`)),
+  select: (id: number) => dataOf<Profile>(api.post(`/users/me/profiles/${id}/select`)),
 }
 
 export const categoryApi = {

@@ -12,3 +12,6 @@ spring:
 logging:
   level:
     com.cinevora: INFO
+app:
+  auth:
+    expose-development-tokens: true

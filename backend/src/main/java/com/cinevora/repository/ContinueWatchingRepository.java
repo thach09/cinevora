@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ContinueWatchingRepository extends JpaRepository<ContinueWatching, ContinueWatchingId> {
-    List<ContinueWatching> findByUser_IdOrderByUpdatedAtDesc(Long userId);
+    List<ContinueWatching> findByProfile_IdOrderByUpdatedAtDesc(Long profileId);
 }

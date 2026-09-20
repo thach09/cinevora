@@ -7,13 +7,15 @@ import java.time.Instant;
 public class WatchHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "user_id") private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "profile_id") private Profile profile;
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "movie_id") private Movie movie;
     @Column(name = "watched_at", nullable = false) private Instant watchedAt;
     @PrePersist void onCreate() { if (watchedAt == null) watchedAt = Instant.now(); }
     public WatchHistory() {}
-    public WatchHistory(User user, Movie movie) { this.user = user; this.movie = movie; }
+    public WatchHistory(User user, Profile profile, Movie movie) { this.user = user; this.profile = profile; this.movie = movie; }
     public Long getId() { return id; }
     public User getUser() { return user; }
+    public Profile getProfile() { return profile; }
     public Movie getMovie() { return movie; }
     public Instant getWatchedAt() { return watchedAt; }
 }

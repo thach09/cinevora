@@ -14,6 +14,9 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 100) private String fullName;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private Role role;
     @Column(name = "is_active", nullable = false) private boolean active = true;
+    @Column(name = "email_verified", nullable = false) private boolean emailVerified = false;
+    @Column(name = "email_verification_token_hash", length = 64) private String emailVerificationTokenHash;
+    @Column(name = "email_verification_expires_at") private Instant emailVerificationExpiresAt;
     @Column(name = "created_at", nullable = false, updatable = false) private Instant createdAt;
     @Column(name = "updated_at", nullable = false) private Instant updatedAt;
 
@@ -33,4 +36,10 @@ public class User {
     public void setRole(Role role) { this.role = role; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+    public String getEmailVerificationTokenHash() { return emailVerificationTokenHash; }
+    public void setEmailVerificationTokenHash(String value) { this.emailVerificationTokenHash = value; }
+    public Instant getEmailVerificationExpiresAt() { return emailVerificationExpiresAt; }
+    public void setEmailVerificationExpiresAt(Instant value) { this.emailVerificationExpiresAt = value; }
 }

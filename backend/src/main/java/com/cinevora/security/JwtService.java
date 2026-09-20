@@ -19,9 +19,12 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationSeconds = expirationSeconds;
     }
-    public String generate(User user) {
+    public String generate(User user) { return generate(user, null); }
+    public String generate(User user, Long profileId) {
         Instant now = Instant.now();
-        return Jwts.builder().subject(user.getUsername()).claim("role", user.getRole().name())
+        var builder = Jwts.builder().subject(user.getUsername()).claim("role", user.getRole().name());
+        if (profileId != null) builder.claim("profileId", profileId);
+        return builder
                 .issuedAt(Date.from(now)).expiration(Date.from(now.plusSeconds(expirationSeconds)))
                 .signWith(key).compact();
     }

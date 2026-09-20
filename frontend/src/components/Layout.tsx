@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query'
 
 import { useAuthStore } from "../store/authStore";
+import { authApi, profileApi } from '../lib/api'
 import { initials } from "../lib/format";
 import { Button } from "./ui";
 
@@ -12,6 +14,7 @@ const customerLinks = [
   ["Favourites", "/favourites", "♥"],
   ["Continue watching", "/continue-watching", "▷"],
   ["History", "/history", "◷"],
+  ["Account", "/account", "◎"],
 ];
 
 const adminLinks = [
@@ -26,6 +29,10 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const refreshToken = useAuthStore((state) => state.refreshToken)
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
+  const setActiveProfile = useAuthStore((state) => state.setActiveProfile)
+  const profiles = useQuery({ queryKey: ['profiles'], queryFn: profileApi.list, enabled: Boolean(user) })
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,9 +52,13 @@ export function AppLayout({ children }: { children?: ReactNode }) {
     document.title = `${pageName} · Cinevora`;
   }, [pageName]);
 
+  useEffect(() => {
+    const defaultProfile = profiles.data?.find((profile) => profile.defaultProfile) || profiles.data?.[0]
+    if (!activeProfileId && defaultProfile) setActiveProfile(defaultProfile.id)
+  }, [activeProfileId, profiles.data, setActiveProfile])
+
   const signOut = () => {
-    logout();
-    navigate("/login");
+    void authApi.logout(refreshToken).finally(() => { logout(); navigate("/login"); })
   };
 
   return (
@@ -146,6 +157,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           </div>
 
           <div className="ml-auto flex items-center gap-3">
+            {profiles.data && profiles.data.length > 0 && <label className="hidden items-center gap-2 text-xs text-slate-500 sm:flex"><span className="sr-only">Active profile</span><select className="profile-select" value={activeProfileId || profiles.data[0].id} onChange={(event) => setActiveProfile(Number(event.target.value))}>{profiles.data.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select></label>}
             <div className="avatar">
               {initials(user?.fullName || user?.username || "U")}
             </div>

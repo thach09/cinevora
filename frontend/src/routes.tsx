@@ -2,14 +2,15 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useAuthStore } from './store/authStore'
 import { AppLayout } from './components/Layout'
-import { LoginPage, RegisterPage } from './pages/AuthPages'
+import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage, VerifyEmailPage } from './pages/AuthPages'
 import { BrowseMoviePage, SearchPage } from './pages/BrowsePages'
 import { MovieDetailPage } from './pages/MovieDetailPage'
 import { ContinueWatchingPage, FavouritesPage, HistoryPage, WatchlistPage } from './pages/LibraryPages'
 import { AdminCategoryPage, AdminDashboardPage, AdminMoviePage, AdminStatisticsPage } from './pages/AdminPages'
+import { AccountPage } from './pages/AccountPage'
 
 export function AppRoutes() {
-  return <Routes><Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} /><Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} /><Route element={<ProtectedRoute />}><Route element={<AppLayout />}><Route index element={<HomeRedirect />} /><Route path="browse" element={<BrowseMoviePage />} /><Route path="search" element={<SearchPage />} /><Route path="movies/:id" element={<MovieDetailPage />} /><Route path="watchlist" element={<WatchlistPage />} /><Route path="favourites" element={<FavouritesPage />} /><Route path="continue-watching" element={<ContinueWatchingPage />} /><Route path="history" element={<HistoryPage />} /><Route path="admin" element={<AdminRoute />}><Route index element={<AdminDashboardPage />} /><Route path="movies" element={<AdminMoviePage />} /><Route path="categories" element={<AdminCategoryPage />} /><Route path="statistics" element={<AdminStatisticsPage />} /></Route></Route></Route><Route path="*" element={<Navigate to="/" replace />} /></Routes>
+  return <Routes><Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} /><Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} /><Route path="/forgot-password" element={<ForgotPasswordPage />} /><Route path="/reset-password" element={<ResetPasswordPage />} /><Route path="/verify-email" element={<VerifyEmailPage />} /><Route element={<ProtectedRoute />}><Route element={<AppLayout />}><Route index element={<HomeRedirect />} /><Route path="browse" element={<BrowseMoviePage />} /><Route path="search" element={<SearchPage />} /><Route path="movies/:id" element={<MovieDetailPage />} /><Route path="watchlist" element={<WatchlistPage />} /><Route path="favourites" element={<FavouritesPage />} /><Route path="continue-watching" element={<ContinueWatchingPage />} /><Route path="history" element={<HistoryPage />} /><Route path="account" element={<AccountPage />} /><Route path="admin" element={<AdminRoute />}><Route index element={<AdminDashboardPage />} /><Route path="movies" element={<AdminMoviePage />} /><Route path="categories" element={<AdminCategoryPage />} /><Route path="statistics" element={<AdminStatisticsPage />} /></Route></Route></Route><Route path="*" element={<Navigate to="/" replace />} /></Routes>
 }
 
 function ProtectedRoute() { const authenticated = useAuthStore((state) => Boolean(state.token && state.user)); return authenticated ? <Outlet /> : <Navigate to="/login" replace state={{ message: 'Sign in to continue.' }} /> }
