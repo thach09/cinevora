@@ -27,6 +27,7 @@ public class CategoryService {
     }
     @Transactional public void delete(Long id) { Category c = get(id); if (movies.countByCategory_IdAndActiveTrue(id) > 0) throw new BusinessException("Không thể xóa thể loại khi vẫn còn phim đang liên kết"); c.setActive(false); }
     @Transactional public CategoryDtos.Response restore(Long id) { Category c = get(id); c.setActive(true); return CategoryDtos.Response.from(c); }
+    @Transactional public CategoryDtos.Response setActive(Long id, boolean active) { Category c = get(id); if (!active && movies.countByCategory_IdAndActiveTrue(id) > 0) throw new BusinessException("Không thể vô hiệu hóa thể loại khi vẫn còn phim đang liên kết"); c.setActive(active); return CategoryDtos.Response.from(c); }
     public Category get(Long id) { return categories.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thể loại " + id)); }
     private String clean(String value) { return value == null || value.isBlank() ? null : value.trim(); }
 }

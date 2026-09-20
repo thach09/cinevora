@@ -40,6 +40,16 @@ public class MovieService {
     @Transactional public MovieDtos.Response update(Long id, MovieDtos.Request request) { Movie m = getEntity(id); apply(m, request); return MovieDtos.Response.from(m); }
     @Transactional public void delete(Long id) { getEntity(id).setActive(false); }
     @Transactional public MovieDtos.Response restore(Long id) { Movie m = getEntity(id); m.setActive(true); return MovieDtos.Response.from(m); }
+    @Transactional public MovieDtos.Response setActive(Long id, boolean active) { Movie m = getEntity(id); m.setActive(active); return MovieDtos.Response.from(m); }
+    @Transactional(readOnly = true) public PageResponse<MovieDtos.Response> searchAdmin(String q, Long categoryId, boolean includeInactive, int page, int size, String sort, String direction) {
+        if (page < 0 || size < 1 || size > 50) throw new BusinessException("Tham số phân trang không hợp lệ");
+        String property = switch (sort == null ? "popularity" : sort.toLowerCase(Locale.ROOT)) {
+            case "title" -> "title"; case "rating" -> "rating"; case "year", "releaseyear" -> "releaseYear"; case "views", "popularity" -> "views"; default -> throw new BusinessException("Trường sort không được hỗ trợ");
+        };
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        String cleanQuery = q == null || q.isBlank() ? "" : q.trim();
+        return PageResponse.from(movies.searchAdmin(cleanQuery, categoryId, includeInactive, PageRequest.of(page, size, Sort.by(sortDirection, property).and(Sort.by(Sort.Direction.ASC, "id")))).map(MovieDtos.Response::from));
+    }
     @Transactional(readOnly = true) public PageResponse<MovieDtos.Response> trending(int page, int size) { return PageResponse.from(movies.findTrending(PageRequest.of(page, Math.min(size, 50))).map(MovieDtos.Response::from)); }
     @Transactional(readOnly = true) public List<com.cinevora.dto.DiscoveryDtos.Suggestion> suggestions(String q, int limit) {
         if (q == null || q.trim().length() < 2) return List.of();

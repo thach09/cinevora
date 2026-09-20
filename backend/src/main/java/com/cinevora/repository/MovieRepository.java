@@ -29,6 +29,9 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     Page<Movie> searchActive(@Param("q") String q, @Param("categoryId") Long categoryId,
                              @Param("minYear") Integer minYear, @Param("maxYear") Integer maxYear,
                              @Param("minRating") java.math.BigDecimal minRating, Pageable pageable);
+    @Query(value = "select m from Movie m join fetch m.category c where (:includeInactive = true or m.active = true) and (:q = '' or lower(m.title) like lower(concat('%', :q, '%')) or lower(m.director) like lower(concat('%', :q, '%')) or lower(m.actors) like lower(concat('%', :q, '%'))) and (:categoryId is null or c.id = :categoryId)", countQuery = "select count(m) from Movie m where (:includeInactive = true or m.active = true) and (:q = '' or lower(m.title) like lower(concat('%', :q, '%')) or lower(m.director) like lower(concat('%', :q, '%')) or lower(m.actors) like lower(concat('%', :q, '%'))) and (:categoryId is null or m.category.id = :categoryId)")
+    Page<Movie> searchAdmin(@Param("q") String q, @Param("categoryId") Long categoryId,
+                            @Param("includeInactive") boolean includeInactive, Pageable pageable);
     long countByActiveTrue();
     long countByCategory_IdAndActiveTrue(Long categoryId);
     @Query("select m from Movie m join fetch m.category where m.active = true order by m.views desc")
