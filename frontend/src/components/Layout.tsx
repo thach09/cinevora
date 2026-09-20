@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "../store/authStore";
@@ -40,6 +40,10 @@ export function AppLayout({ children }: { children?: ReactNode }) {
     .find(([, path]) => location.pathname.startsWith(`${path}/`));
 
   const pageName = exactMatch?.[0] || nestedMatch?.[0] || "Cinevora";
+
+  useEffect(() => {
+    document.title = `${pageName} · Cinevora`;
+  }, [pageName]);
 
   const signOut = () => {
     logout();
@@ -162,6 +166,14 @@ export function AppLayout({ children }: { children?: ReactNode }) {
               onClick={signOut}
             >
               Sign out
+            </Button>
+            <Button
+              variant="ghost"
+              className="px-2 sm:hidden"
+              onClick={signOut}
+              aria-label="Sign out"
+            >
+              Exit
             </Button>
           </div>
         </header>
