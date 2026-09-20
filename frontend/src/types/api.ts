@@ -97,6 +97,8 @@ export interface ContinueEntry {
   title: string
   thumbnailUrl: string | null
   percent: number
+  positionSeconds: number
+  durationSeconds: number | null
   updatedAt: string
 }
 

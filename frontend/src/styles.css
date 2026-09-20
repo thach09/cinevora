@@ -110,6 +110,19 @@ a { text-decoration: none; }
   .continue-thumb img, .continue-thumb .poster-fallback { @apply absolute inset-0 h-full w-full object-cover; }
   .progress-track { @apply h-1.5 overflow-hidden rounded-full bg-slate-800; }
   .progress-track span { @apply block h-full rounded-full bg-gradient-to-r from-pink-400 to-violet-400; }
+  .video-player { @apply overflow-hidden bg-black/40; }
+  .video-element { @apply block aspect-video w-full bg-black; }
+  .video-toolbar { @apply flex flex-wrap items-center gap-3 border-t border-slate-800 px-4 py-3; }
+  .video-time { @apply flex min-w-[220px] flex-1 items-center gap-3 text-xs text-slate-400; }
+  .video-time input { @apply min-w-24 flex-1 accent-pink-300; }
+  .video-rate { @apply flex items-center gap-2 text-xs text-slate-400; }
+  .video-rate select { @apply rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs text-white; }
+  .video-caption-note { @apply text-xs text-slate-500; }
+  .video-error { @apply border-t border-rose-300/20 bg-rose-950/40 px-4 py-3 text-xs text-rose-200; }
+  .poster-upload { @apply space-y-4 rounded-2xl border border-dashed border-slate-700 bg-slate-950/30 p-4; }
+  .poster-upload-preview { @apply flex aspect-[2/3] max-w-[180px] items-center justify-center overflow-hidden rounded-xl border border-slate-700 bg-slate-900 text-center text-xs text-slate-500; }
+  .poster-upload-preview img { @apply h-full w-full object-cover; }
+  .poster-upload-actions { @apply flex flex-wrap gap-2; }
 
   .history-header, .history-row, .table-header, .table-row { @apply grid items-center gap-4 border-b border-slate-800/70 px-5 py-4; }
   .history-header { @apply grid-cols-[1fr_140px_60px] text-[10px] font-bold uppercase tracking-widest text-slate-600; }

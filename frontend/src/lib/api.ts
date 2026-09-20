@@ -72,9 +72,23 @@ export const userDataApi = {
   history: () => dataOf<HistoryEntry[]>(api.get('/users/me/history')),
   addHistory: (movieId: number) => dataOf<void>(api.post(`/users/me/history/${movieId}`)),
   continueWatching: () => dataOf<ContinueEntry[]>(api.get('/users/me/continue-watching')),
-  updateProgress: (movieId: number, percent: number) => dataOf<void>(api.put('/users/me/continue-watching', { movieId, percent })),
+  updateProgress: (movieId: number, positionSeconds: number, durationSeconds?: number) => dataOf<void>(api.put('/users/me/continue-watching', {
+    movieId,
+    positionSeconds: Math.max(0, Math.floor(positionSeconds)),
+    durationSeconds: durationSeconds && durationSeconds > 0 ? Math.floor(durationSeconds) : undefined,
+    percent: durationSeconds && durationSeconds > 0 ? Math.round((positionSeconds / durationSeconds) * 100) : undefined,
+  })),
   removeContinue: (movieId: number) => dataOf<void>(api.delete(`/users/me/continue-watching/${movieId}`)),
   exportHistory: () => api.get('/users/me/history/export', { responseType: 'blob' }),
+}
+
+export const mediaApi = {
+  uploadPoster: (movieId: number, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return dataOf<Movie>(api.post(`/media/movies/${movieId}/poster`, form, { headers: { 'Content-Type': 'multipart/form-data' } }))
+  },
+  removePoster: (movieId: number) => dataOf<Movie>(api.delete(`/media/movies/${movieId}/poster`)),
 }
 
 export const statisticsApi = { get: () => dataOf<Statistics>(api.get('/statistics')) }

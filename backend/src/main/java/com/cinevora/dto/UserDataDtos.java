@@ -14,8 +14,14 @@ public final class UserDataDtos {
     public record HistoryResponse(Long id, Long movieId, String title, Instant watchedAt) {
         public static HistoryResponse from(WatchHistory h) { return new HistoryResponse(h.getId(), h.getMovie().getId(), h.getMovie().getTitle(), h.getWatchedAt()); }
     }
-    public record ContinueResponse(Long movieId, String title, String thumbnailUrl, Integer percent, Instant updatedAt) {
-        public static ContinueResponse from(ContinueWatching c) { return new ContinueResponse(c.getMovie().getId(), c.getMovie().getTitle(), c.getMovie().getThumbnailUrl(), c.getPercent(), c.getUpdatedAt()); }
+    public record ContinueResponse(Long movieId, String title, String thumbnailUrl, Integer percent, Integer positionSeconds, Integer durationSeconds, Instant updatedAt) {
+        public static ContinueResponse from(ContinueWatching c) {
+            int position = c.getPositionSeconds() == null ? 0 : c.getPositionSeconds();
+            int duration = c.getDurationSeconds() == null ? 0 : c.getDurationSeconds();
+            int derivedPercent = duration > 0 ? Math.max(0, Math.min(100, Math.round((position * 100f) / duration))) : c.getPercent();
+            return new ContinueResponse(c.getMovie().getId(), c.getMovie().getTitle(), c.getMovie().getThumbnailUrl(), derivedPercent, position, duration == 0 ? null : duration, c.getUpdatedAt());
+        }
     }
-    public record ProgressRequest(@NotNull Long movieId, @NotNull @Min(0) @Max(100) Integer percent) {}
+    public record ProgressRequest(@NotNull Long movieId, @Min(0) @Max(100) Integer percent,
+                                  @Min(0) Integer positionSeconds, @Min(1) Integer durationSeconds) {}
 }
