@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAuthStore } from "../store/authStore";
-import { authApi, profileApi } from '../lib/api'
+import { authApi, notificationApi, profileApi } from '../lib/api'
 import { initials } from "../lib/format";
 import { Button } from "./ui";
 
@@ -20,6 +20,7 @@ const customerLinks = [
 const adminLinks = [
   ["Users", "/admin/users", "U"],
   ["Archive", "/admin/archive", "A"],
+  ["Media", "/admin/media", "M"],
   ["Dashboard", "/admin", "▦"],
   ["Movies", "/admin/movies", "▣"],
   ["Categories", "/admin/categories", "◈"],
@@ -65,6 +66,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
         <div className="flex items-center justify-between px-6 py-6">
           <NavLink
@@ -160,6 +162,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
           <div className="ml-auto flex items-center gap-3">
             {profiles.data && profiles.data.length > 0 && <label className="hidden items-center gap-2 text-xs text-slate-500 sm:flex"><span className="sr-only">Active profile</span><select className="profile-select" value={activeProfileId || profiles.data[0].id} onChange={(event) => setActiveProfile(Number(event.target.value))}>{profiles.data.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select></label>}
+            <NotificationCenter />
             <div className="avatar">
               {initials(user?.fullName || user?.username || "U")}
             </div>
@@ -192,7 +195,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           </div>
         </header>
 
-        <main className="page-content">{children || <Outlet />}</main>
+        <main id="main-content" className="page-content">{children || <Outlet />}</main>
 
         <footer className="footer">
           <span>© {new Date().getFullYear()} Cinevora</span>
@@ -201,6 +204,15 @@ export function AppLayout({ children }: { children?: ReactNode }) {
       </div>
     </div>
   );
+}
+
+function NotificationCenter() {
+  const [open, setOpen] = useState(false)
+  const client = useQueryClient()
+  const inbox = useQuery({ queryKey: ['notifications'], queryFn: notificationApi.inbox, staleTime: 30_000, initialData: { items: [], unreadCount: 0 } })
+  const markRead = useMutation({ mutationFn: notificationApi.markRead, onSuccess: () => client.invalidateQueries({ queryKey: ['notifications'] }) })
+  const markAll = useMutation({ mutationFn: notificationApi.markAllRead, onSuccess: () => client.invalidateQueries({ queryKey: ['notifications'] }) })
+  return <div className="notification-center"><button type="button" className="notification-button" aria-label={`Notifications${inbox.data?.unreadCount ? `, ${inbox.data.unreadCount} unread` : ''}`} aria-expanded={open} onClick={() => setOpen((current) => !current)}><span aria-hidden="true">♧</span>{Boolean(inbox.data?.unreadCount) && <span className="notification-badge">{inbox.data.unreadCount > 9 ? '9+' : inbox.data.unreadCount}</span>}</button>{open && <div className="notification-popover" role="dialog" aria-label="Notifications"><div className="flex items-center justify-between gap-4 border-b border-slate-800 px-4 py-3"><strong className="text-sm text-white">Notifications</strong><button type="button" className="text-xs text-pink-200 hover:text-white" onClick={() => markAll.mutate()}>Mark all read</button></div><div className="max-h-80 overflow-y-auto">{inbox.data?.items.length ? inbox.data.items.map((item) => <button type="button" key={item.id} className={`notification-item ${item.read ? '' : 'notification-item-unread'}`} onClick={() => { if (!item.read) markRead.mutate(item.id); if (item.actionUrl) window.location.assign(item.actionUrl) }}><span className="block font-semibold text-white">{item.title}</span><span className="mt-1 block text-xs leading-5 text-slate-400">{item.body}</span></button>) : <p className="px-4 py-6 text-center text-xs text-slate-500">You are all caught up.</p>}</div></div>}</div>
 }
 
 function SideLink({

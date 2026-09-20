@@ -6,7 +6,7 @@ import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage, VerifyE
 import { BrowseMoviePage, SearchPage } from './pages/BrowsePages'
 import { MovieDetailPage } from './pages/MovieDetailPage'
 import { ContinueWatchingPage, FavouritesPage, HistoryPage, WatchlistPage } from './pages/LibraryPages'
-import { AdminArchivePage, AdminCategoryPage, AdminDashboardPage, AdminMoviePage, AdminStatisticsPage, AdminUserPage } from './pages/AdminPages'
+import { AdminArchivePage, AdminCategoryPage, AdminDashboardPage, AdminMediaPage, AdminMoviePage, AdminStatisticsPage, AdminUserPage } from './pages/AdminPages'
 import { AccountPage } from './pages/AccountPage'
 
 export function AppRoutes() {
@@ -32,6 +32,7 @@ export function AppRoutes() {
           <Route path="movies" element={<AdminMoviePage />} />
           <Route path="categories" element={<AdminCategoryPage />} />
           <Route path="archive" element={<AdminArchivePage />} />
+          <Route path="media" element={<AdminMediaPage />} />
           <Route path="users" element={<AdminUserPage />} />
           <Route path="statistics" element={<AdminStatisticsPage />} />
         </Route>

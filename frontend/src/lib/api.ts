@@ -4,6 +4,7 @@ import type {
   ApiResponse, AuthResponse, Category, ContinueEntry, HistoryEntry, LoginRequest,
   Movie, MovieQuery, MovieRef, PageResponse, RegisterRequest, Statistics, User, Profile, AccountSession,
   MoviePreference, PreferenceSignal, Suggestion, SearchEntry, PopularSearch, HomeResponse,
+  MovieTrack, NotificationInbox,
 } from '../types/api'
 
 export const api = axios.create({
@@ -70,6 +71,19 @@ export const adminApi = {
   setMovieStatus: (id: number, active: boolean) => dataOf<Movie>(api.patch(`/admin/movies/${id}/status`, { active })),
   categories: (includeInactive = true) => dataOf<Category[]>(api.get('/admin/categories', { params: { includeInactive } })),
   setCategoryStatus: (id: number, active: boolean) => dataOf<Category>(api.patch(`/admin/categories/${id}/status`, { active })),
+}
+
+export const trackApi = {
+  list: (movieId: number) => dataOf<MovieTrack[]>(api.get(`/movies/${movieId}/tracks`)),
+  adminList: (movieId: number) => dataOf<MovieTrack[]>(api.get(`/admin/movies/${movieId}/tracks`)),
+  create: (movieId: number, payload: { kind: 'SUBTITLE' | 'AUDIO'; languageCode: string; label: string; sourceUrl: string; defaultTrack: boolean }) => dataOf<MovieTrack>(api.post(`/admin/movies/${movieId}/tracks`, payload)),
+  archive: (movieId: number, trackId: number) => dataOf<void>(api.delete(`/admin/movies/${movieId}/tracks/${trackId}`)),
+}
+
+export const notificationApi = {
+  inbox: () => dataOf<NotificationInbox>(api.get('/users/me/notifications')),
+  markRead: (id: number) => dataOf<void>(api.patch(`/users/me/notifications/${id}/read`)),
+  markAllRead: () => dataOf<void>(api.post('/users/me/notifications/read-all')),
 }
 
 export const categoryApi = {

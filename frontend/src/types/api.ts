@@ -126,3 +126,7 @@ export interface Suggestion { id: number; title: string; thumbnailUrl: string | 
 export interface SearchEntry { id: number; query: string; searchedAt: string }
 export interface PopularSearch { query: string; count: number }
 export interface HomeResponse { topPicks: Movie[]; trending: Movie[]; continueWatching: ContinueEntry[] }
+export type TrackKind = 'SUBTITLE' | 'AUDIO'
+export interface MovieTrack { id: number; movieId: number; kind: TrackKind; languageCode: string; label: string; sourceUrl: string; defaultTrack: boolean; active: boolean }
+export interface NotificationItem { id: number; kind: string; title: string; body: string; actionUrl: string | null; read: boolean; createdAt: string }
+export interface NotificationInbox { items: NotificationItem[]; unreadCount: number }

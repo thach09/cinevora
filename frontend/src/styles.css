@@ -24,6 +24,7 @@ a { text-decoration: none; }
     @apply min-h-screen bg-ink;
     background-image: radial-gradient(circle at 78% -5%, rgba(239, 93, 168, .10), transparent 32rem), radial-gradient(circle at 15% 20%, rgba(101, 216, 255, .04), transparent 28rem);
   }
+  .skip-link { @apply fixed left-4 top-4 z-[120] -translate-y-24 rounded-lg bg-pink-300 px-4 py-2 text-sm font-semibold text-slate-950 transition focus:translate-y-0; }
   .sidebar {
     @apply fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-slate-800/70 bg-[#0b0e18]/95 backdrop-blur-xl transition-transform duration-300 md:translate-x-0;
   }
@@ -40,6 +41,12 @@ a { text-decoration: none; }
   .brand-mark { @apply flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-pink-300 to-violet-500 font-black text-white shadow-glow; }
   .avatar { @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pink-300/25 bg-pink-300/10 text-xs font-bold text-pink-100; }
   .profile-select { @apply max-w-32 rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-2 text-xs text-slate-200 outline-none focus:border-pink-300/60; }
+  .notification-center { @apply relative; }
+  .notification-button { @apply relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/70 bg-slate-900/60 text-lg text-slate-300 transition hover:border-pink-300/50 hover:text-white; }
+  .notification-badge { @apply absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-pink-400 px-1 text-[9px] font-bold text-slate-950; }
+  .notification-popover { @apply absolute right-0 top-12 z-50 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur; }
+  .notification-item { @apply block w-full border-b border-slate-800/70 px-4 py-3 text-left transition last:border-0 hover:bg-slate-900; }
+  .notification-item-unread { @apply border-l-2 border-l-pink-300 bg-pink-300/5; }
   .eyebrow { @apply text-[10px] font-bold uppercase tracking-[.22em] text-slate-500; }
   .side-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition duration-200 hover:bg-white/[.045] hover:text-white; }
   .side-link-active { @apply bg-pink-400/10 font-semibold text-pink-200 shadow-[inset_2px_0_0_rgba(244,114,182,.9)]; }
