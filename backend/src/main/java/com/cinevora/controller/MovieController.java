@@ -19,6 +19,7 @@ public class MovieController {
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "12") int size, @RequestParam(defaultValue = "popularity") String sort,
             @RequestParam(defaultValue = "desc") String direction) { return ApiResponse.ok(service.search(q, categoryId, minYear, maxYear, minRating, page, size, sort, direction)); }
     @GetMapping("/trending") public ApiResponse<PageResponse<MovieDtos.Response>> trending(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) { return ApiResponse.ok(service.trending(page, size)); }
+    @GetMapping("/suggestions") public ApiResponse<java.util.List<com.cinevora.dto.DiscoveryDtos.Suggestion>> suggestions(@RequestParam String q, @RequestParam(defaultValue = "6") int limit) { return ApiResponse.ok(service.suggestions(q, limit)); }
     @GetMapping("/{id}") public ApiResponse<MovieDtos.Response> get(@PathVariable Long id) { return ApiResponse.ok(service.getActive(id)); }
     @PostMapping @PreAuthorize("hasRole('ADMIN')") @ResponseStatus(HttpStatus.CREATED) public ApiResponse<MovieDtos.Response> create(@Valid @RequestBody MovieDtos.Request request) { return ApiResponse.ok("Tạo phim thành công", service.create(request)); }
     @PutMapping("/{id}") @PreAuthorize("hasRole('ADMIN')") public ApiResponse<MovieDtos.Response> update(@PathVariable Long id, @Valid @RequestBody MovieDtos.Request request) { return ApiResponse.ok("Cập nhật phim thành công", service.update(id, request)); }

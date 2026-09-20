@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Year;
 import java.util.Locale;
+import java.util.List;
 
 @Service
 public class MovieService {
@@ -40,6 +41,11 @@ public class MovieService {
     @Transactional public void delete(Long id) { getEntity(id).setActive(false); }
     @Transactional public MovieDtos.Response restore(Long id) { Movie m = getEntity(id); m.setActive(true); return MovieDtos.Response.from(m); }
     @Transactional(readOnly = true) public PageResponse<MovieDtos.Response> trending(int page, int size) { return PageResponse.from(movies.findTrending(PageRequest.of(page, Math.min(size, 50))).map(MovieDtos.Response::from)); }
+    @Transactional(readOnly = true) public List<com.cinevora.dto.DiscoveryDtos.Suggestion> suggestions(String q, int limit) {
+        if (q == null || q.trim().length() < 2) return List.of();
+        int take = Math.max(1, Math.min(limit, 6));
+        return movies.searchActive(q.trim(), null, null, null, null, PageRequest.of(0, take, Sort.by(Sort.Direction.ASC, "title"))).getContent().stream().map(m -> new com.cinevora.dto.DiscoveryDtos.Suggestion(m.getId(), m.getTitle(), m.getThumbnailUrl(), m.getReleaseYear())).toList();
+    }
     @Transactional public void incrementViews(Movie movie) { movie.setViews(movie.getViews() + 1); }
     @Transactional public void incrementFavourites(Movie movie) { movie.setFavouritesCount(movie.getFavouritesCount() + 1); }
     @Transactional public void decrementFavourites(Movie movie) { movie.setFavouritesCount(Math.max(0, movie.getFavouritesCount() - 1)); }

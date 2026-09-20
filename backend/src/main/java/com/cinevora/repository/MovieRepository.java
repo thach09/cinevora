@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import java.util.Optional;
+import java.util.List;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     Optional<Movie> findByIdAndActiveTrue(Long id);
@@ -32,4 +33,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     long countByCategory_IdAndActiveTrue(Long categoryId);
     @Query("select m from Movie m join fetch m.category where m.active = true order by m.views desc")
     Page<Movie> findTrending(Pageable pageable);
+    @Query("select distinct m from Movie m join fetch m.category where m.active = true")
+    List<Movie> findActiveCandidates(Pageable pageable);
+    @Query("select distinct m from Movie m join fetch m.category where m.active = true and m.id not in :excluded")
+    List<Movie> findActiveCandidatesExcluding(@Param("excluded") java.util.Collection<Long> excluded, Pageable pageable);
 }
