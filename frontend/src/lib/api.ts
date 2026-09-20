@@ -63,6 +63,15 @@ export const profileApi = {
   select: (id: number) => dataOf<Profile>(api.post(`/users/me/profiles/${id}/select`)),
 }
 
+export const adminApi = {
+  users: (params: { q?: string; status?: 'all' | 'active' | 'inactive'; page?: number; size?: number } = {}) => dataOf<PageResponse<User>>(api.get('/admin/users', { params })),
+  setUserStatus: (id: number, active: boolean) => dataOf<User>(api.patch(`/admin/users/${id}/status`, { active })),
+  movies: (params: { q?: string; includeInactive?: boolean; page?: number; size?: number; sort?: string; direction?: 'asc' | 'desc' } = {}) => dataOf<PageResponse<Movie>>(api.get('/admin/movies', { params })),
+  setMovieStatus: (id: number, active: boolean) => dataOf<Movie>(api.patch(`/admin/movies/${id}/status`, { active })),
+  categories: (includeInactive = true) => dataOf<Category[]>(api.get('/admin/categories', { params: { includeInactive } })),
+  setCategoryStatus: (id: number, active: boolean) => dataOf<Category>(api.patch(`/admin/categories/${id}/status`, { active })),
+}
+
 export const categoryApi = {
   list: () => dataOf<Category[]>(api.get('/categories')),
   create: (payload: { name: string; description?: string }) => dataOf<Category>(api.post('/categories', payload)),

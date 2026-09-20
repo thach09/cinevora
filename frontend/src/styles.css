@@ -97,6 +97,9 @@ a { text-decoration: none; }
   .search-chip { @apply rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs text-slate-300 transition hover:border-pink-300/50 hover:text-pink-100; }
   .search-chip small { @apply ml-1 text-slate-500; }
   .section-note { @apply text-xs uppercase tracking-[0.16em] text-slate-500; }
+  .status-pill { @apply inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]; }
+  .status-pill-active { @apply border-emerald-300/20 bg-emerald-300/10 text-emerald-200; }
+  .status-pill-inactive { @apply border-rose-300/20 bg-rose-300/10 text-rose-200; }
   .search-input-wrap { @apply flex min-h-11 items-center gap-3 rounded-xl border border-slate-700 bg-slate-950/50 px-3.5 text-lg text-slate-500 transition focus-within:border-pink-300/70 focus-within:ring-2 focus-within:ring-pink-300/10; }
   .search-input-wrap input { @apply min-w-0 flex-1 bg-transparent py-3 text-sm text-white outline-none placeholder:text-slate-600; }
   .filter-input { @apply py-3; }

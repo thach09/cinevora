@@ -18,6 +18,8 @@ const customerLinks = [
 ];
 
 const adminLinks = [
+  ["Users", "/admin/users", "U"],
+  ["Archive", "/admin/archive", "A"],
   ["Dashboard", "/admin", "▦"],
   ["Movies", "/admin/movies", "▣"],
   ["Categories", "/admin/categories", "◈"],
