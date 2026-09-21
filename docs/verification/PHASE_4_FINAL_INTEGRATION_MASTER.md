@@ -10,18 +10,18 @@ This is an integration PASS for the current local candidate. It is not a product
 
 ## 1. Test environment
 
-| Component | Observed value |
-|---|---|
-| Java | 21.0.12.1 LTS |
-| Spring Boot | 3.4.5 |
-| PostgreSQL | 16.15, isolated `cinevora_test` database |
-| Node/npm | Node 24.21.0 / npm 11.19.0 |
-| Playwright | 1.63.0 |
-| Lighthouse | 13.5.0 |
-| Browser | Installed Google Chrome via Playwright `executablePath` |
-| Backend | `http://localhost:18080`, dev profile, `cinevora_test` |
-| Frontend dev | `http://localhost:5173` |
-| Frontend production preview | `http://localhost:4173` |
+| Component                   | Observed value                                          |
+| --------------------------- | ------------------------------------------------------- |
+| Java                        | 21.0.12.1 LTS                                           |
+| Spring Boot                 | 3.4.5                                                   |
+| PostgreSQL                  | 16.15, isolated `cinevora_test` database                |
+| Node/npm                    | Node 24.21.0 / npm 11.19.0                              |
+| Playwright                  | 1.63.0                                                  |
+| Lighthouse                  | 13.5.0                                                  |
+| Browser                     | Installed Google Chrome via Playwright `executablePath` |
+| Backend                     | `http://localhost:18080`, dev profile, `cinevora_test`  |
+| Frontend dev                | `http://localhost:5173`                                 |
+| Frontend production preview | `http://localhost:4173`                                 |
 
 The developer database was not reset. No `docker compose down -v` was run. The dedicated test database was used for all mutations.
 
@@ -125,12 +125,12 @@ npm.cmd run lighthouse
 
 Final scores from `production-login`:
 
-| Category | Score |
-|---|---:|
-| Performance | 99 |
-| Accessibility | 100 |
-| Best Practices | 100 |
-| SEO | 100 |
+| Category       | Score |
+| -------------- | ----: |
+| Performance    |    99 |
+| Accessibility  |   100 |
+| Best Practices |   100 |
+| SEO            |   100 |
 
 Representative metrics:
 
@@ -195,18 +195,18 @@ The prior pre-Phase-4 audit remains at [PHASE_4_PRE_DEPLOYMENT_MASTER_AUDIT.md](
 
 ## 7. Final Phase 4 gate
 
-| Gate | Result | Evidence |
-|---|---|---|
-| Playwright setup | PASS | Playwright 1.63.0, 5 tests discovered and executed |
-| Customer E2E | PASS | Registration, browse, detail, watchlist, favourite, history |
-| Admin E2E | PASS | CMS create flows and category rule HTTP 400 |
-| Cross-role E2E | PASS | Admin publish -> customer discovery/play -> statistics increment |
-| Profile switching cache | PASS | Cross-profile watchlist isolation without reload |
-| Console/network errors | PASS | No unexpected console, page, failed-request or 5xx evidence |
-| Responsive 375/768/1280/1440 | PASS | No horizontal overflow; mobile menu verified |
-| Lighthouse production preview | PASS | 99 / 100 / 100 / 100 |
-| Backend tests | PASS | 6/6 tests, zero failures/errors |
-| Frontend build/type/audit | PASS | Build, TypeScript and 0 vulnerabilities |
+| Gate                          | Result | Evidence                                                         |
+| ----------------------------- | ------ | ---------------------------------------------------------------- |
+| Playwright setup              | PASS   | Playwright 1.63.0, 5 tests discovered and executed               |
+| Customer E2E                  | PASS   | Registration, browse, detail, watchlist, favourite, history      |
+| Admin E2E                     | PASS   | CMS create flows and category rule HTTP 400                      |
+| Cross-role E2E                | PASS   | Admin publish -> customer discovery/play -> statistics increment |
+| Profile switching cache       | PASS   | Cross-profile watchlist isolation without reload                 |
+| Console/network errors        | PASS   | No unexpected console, page, failed-request or 5xx evidence      |
+| Responsive 375/768/1280/1440  | PASS   | No horizontal overflow; mobile menu verified                     |
+| Lighthouse production preview | PASS   | 99 / 100 / 100 / 100                                             |
+| Backend tests                 | PASS   | 6/6 tests, zero failures/errors                                  |
+| Frontend build/type/audit     | PASS   | Build, TypeScript and 0 vulnerabilities                          |
 
 **Final status: PHASE 4 FINAL INTEGRATION PASS.**
 
