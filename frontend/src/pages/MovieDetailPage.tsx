@@ -16,12 +16,13 @@ export function MovieDetailPage() {
   const client = useQueryClient()
   const { push } = useToast()
   const user = useAuthStore((state) => state.user)
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
   const [showPlayer, setShowPlayer] = useState(false)
   const movie = useQuery({ queryKey: ['movie', movieId], queryFn: () => movieApi.get(movieId), enabled: Number.isFinite(movieId) })
-  const watchlist = useQuery({ queryKey: ['watchlist'], queryFn: userDataApi.watchlist, enabled: Boolean(user) })
-  const favourites = useQuery({ queryKey: ['favourites'], queryFn: userDataApi.favourites, enabled: Boolean(user) })
-  const continueQuery = useQuery({ queryKey: ['continue-watching'], queryFn: userDataApi.continueWatching, enabled: Boolean(user) })
-  const preferences = useQuery({ queryKey: ['preferences'], queryFn: discoveryApi.preferences, enabled: Boolean(user) })
+  const watchlist = useQuery({ queryKey: ['watchlist', activeProfileId], queryFn: userDataApi.watchlist, enabled: Boolean(user && activeProfileId) })
+  const favourites = useQuery({ queryKey: ['favourites', activeProfileId], queryFn: userDataApi.favourites, enabled: Boolean(user && activeProfileId) })
+  const continueQuery = useQuery({ queryKey: ['continue-watching', activeProfileId], queryFn: userDataApi.continueWatching, enabled: Boolean(user && activeProfileId) })
+  const preferences = useQuery({ queryKey: ['preferences', activeProfileId], queryFn: discoveryApi.preferences, enabled: Boolean(user && activeProfileId) })
   const action = useMutation({
     mutationFn: async (type: 'watchlist' | 'favourites' | 'history') => {
       if (type === 'watchlist') {

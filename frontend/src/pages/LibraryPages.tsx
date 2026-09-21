@@ -6,6 +6,7 @@ import { Button, EmptyState, QueryError, Spinner } from '../components/ui'
 import { MovieCard, PosterArtwork } from '../components/MovieCard'
 import { formatDate } from '../lib/format'
 import { useToast } from '../components/ToastProvider'
+import { useAuthStore } from '../store/authStore'
 
 export function WatchlistPage() { return <LibraryPage type="watchlist" title="Your watchlist" eyebrow="Saved for later" description="The films you promised yourself you would watch." /> }
 export function FavouritesPage() { return <LibraryPage type="favourites" title="Your favourites" eyebrow="The keepers" description="The stories that stayed with you." /> }
@@ -13,7 +14,8 @@ export function FavouritesPage() { return <LibraryPage type="favourites" title="
 function LibraryPage({ type, title, eyebrow, description }: { type: 'watchlist' | 'favourites'; title: string; eyebrow: string; description: string }) {
   const client = useQueryClient()
   const { push } = useToast()
-  const query = useQuery({ queryKey: [type], queryFn: type === 'watchlist' ? userDataApi.watchlist : userDataApi.favourites })
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
+  const query = useQuery({ queryKey: [type, activeProfileId], queryFn: type === 'watchlist' ? userDataApi.watchlist : userDataApi.favourites, enabled: Boolean(activeProfileId) })
   const remove = useMutation({ mutationFn: (id: number) => type === 'watchlist' ? userDataApi.removeWatchlist(id) : userDataApi.removeFavourite(id), onSuccess: () => { client.invalidateQueries({ queryKey: [type] }); push(`Removed from your ${type}.`, 'success') }, onError: (error) => push(getApiError(error), 'error') })
   if (query.isLoading) return <Spinner />
   if (query.isError) return <QueryError message={getApiError(query.error)} />
@@ -24,7 +26,8 @@ function LibraryPage({ type, title, eyebrow, description }: { type: 'watchlist' 
 export function ContinueWatchingPage() {
   const client = useQueryClient()
   const { push } = useToast()
-  const query = useQuery({ queryKey: ['continue-watching'], queryFn: userDataApi.continueWatching })
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
+  const query = useQuery({ queryKey: ['continue-watching', activeProfileId], queryFn: userDataApi.continueWatching, enabled: Boolean(activeProfileId) })
   const remove = useMutation({ mutationFn: userDataApi.removeContinue, onSuccess: () => { client.invalidateQueries({ queryKey: ['continue-watching'] }); push('Removed from continue watching.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   if (query.isLoading) return <Spinner />
   if (query.isError) return <QueryError message={getApiError(query.error)} />
@@ -33,7 +36,8 @@ export function ContinueWatchingPage() {
 
 export function HistoryPage() {
   const { push } = useToast()
-  const query = useQuery({ queryKey: ['history'], queryFn: userDataApi.history })
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
+  const query = useQuery({ queryKey: ['history', activeProfileId], queryFn: userDataApi.history, enabled: Boolean(activeProfileId) })
   const [exporting, setExporting] = useState(false)
   if (query.isLoading) return <Spinner />
   if (query.isError) return <QueryError message={getApiError(query.error)} />

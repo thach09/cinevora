@@ -6,6 +6,7 @@ import com.cinevora.entity.*;
 import com.cinevora.exception.BusinessException;
 import com.cinevora.repository.UserRepository;
 import com.cinevora.repository.PasswordResetTokenRepository;
+import com.cinevora.repository.ProfileRepository;
 import com.cinevora.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,16 +23,17 @@ public class AuthService {
     private final JwtService jwt;
     private final SessionService sessions;
     private final PasswordResetTokenRepository resetTokens;
+    private final ProfileRepository profiles;
     private final SensitiveActionRateLimiter limiter;
     private final boolean exposeDevelopmentTokens;
     @Autowired
     public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt, SessionService sessions,
-                       PasswordResetTokenRepository resetTokens, SensitiveActionRateLimiter limiter,
+                       PasswordResetTokenRepository resetTokens, ProfileRepository profiles, SensitiveActionRateLimiter limiter,
                        @Value("${app.auth.expose-development-tokens:false}") boolean exposeDevelopmentTokens) {
-        this.users = users; this.encoder = encoder; this.jwt = jwt; this.sessions = sessions; this.resetTokens = resetTokens; this.limiter = limiter; this.exposeDevelopmentTokens = exposeDevelopmentTokens;
+        this.users = users; this.encoder = encoder; this.jwt = jwt; this.sessions = sessions; this.resetTokens = resetTokens; this.profiles = profiles; this.limiter = limiter; this.exposeDevelopmentTokens = exposeDevelopmentTokens;
     }
     public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt) {
-        this(users, encoder, jwt, null, null, new SensitiveActionRateLimiter(), false);
+        this(users, encoder, jwt, null, null, null, new SensitiveActionRateLimiter(), false);
     }
 
     @Transactional
@@ -60,6 +62,7 @@ public class AuthService {
         user.setEmailVerificationTokenHash(TokenService.sha256(verificationToken));
         user.setEmailVerificationExpiresAt(Instant.now().plus(24, ChronoUnit.HOURS));
         user = users.save(user);
+        profiles.save(new Profile(user, user.getFullName(), true));
         return issue(user, userAgent, ipAddress, exposeDevelopmentTokens ? verificationToken : null);
     }
 

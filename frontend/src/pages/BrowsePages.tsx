@@ -6,14 +6,16 @@ import { MovieGrid } from '../components/MovieCard'
 import { Button, EmptyState, QueryError, Spinner } from '../components/ui'
 import { formatNumber } from '../lib/format'
 import { Seo } from '../components/Seo'
+import { useAuthStore } from '../store/authStore'
 
 export function BrowseMoviePage() {
   const [page, setPage] = useState(0)
   const navigate = useNavigate()
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
   const categories = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list })
   const movies = useQuery({ queryKey: ['movies', 'browse', page], queryFn: () => movieApi.list({ page, size: 12, sort: 'popularity', direction: 'desc' }) })
   const trending = useQuery({ queryKey: ['movies', 'trending'], queryFn: () => movieApi.trending({ size: 5 }) })
-  const home = useQuery({ queryKey: ['home'], queryFn: discoveryApi.home, staleTime: 60_000 })
+  const home = useQuery({ queryKey: ['home', activeProfileId], queryFn: discoveryApi.home, enabled: Boolean(activeProfileId), staleTime: 60_000 })
 
   if (movies.isLoading) return <Spinner label="Curating your cinema" />
   if (movies.isError) return <QueryError message={getApiError(movies.error)} />
@@ -63,6 +65,7 @@ function HeroArtwork({ movie }: { movie?: { title: string; thumbnailUrl: string 
 export function SearchPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const activeProfileId = useAuthStore((state) => state.activeProfileId)
   const [q, setQ] = useState(searchParams.get('q') || '')
   const [categoryId, setCategoryId] = useState(searchParams.get('categoryId') || '')
   const [minRating, setMinRating] = useState('')
@@ -70,7 +73,7 @@ export function SearchPage() {
   const [page, setPage] = useState(0)
   const [suggestionQuery, setSuggestionQuery] = useState(q.trim())
   const categories = useQuery({ queryKey: ['categories'], queryFn: categoryApi.list })
-  const recentSearches = useQuery({ queryKey: ['search-history'], queryFn: discoveryApi.recentSearches })
+  const recentSearches = useQuery({ queryKey: ['search-history', activeProfileId], queryFn: discoveryApi.recentSearches, enabled: Boolean(activeProfileId) })
   const popularSearches = useQuery({ queryKey: ['popular-searches'], queryFn: () => discoveryApi.popularSearches(6) })
   useEffect(() => {
     const timer = window.setTimeout(() => setSuggestionQuery(q.trim()), 300)
