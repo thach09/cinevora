@@ -5,14 +5,14 @@
 
 ## Bảng tổng hợp
 
-| Phase | Kết quả chính | Commit đã push | Báo cáo |
-|---|---|---|---|
-| 3.6 | Media metadata, streaming core, watch progress và Continue Watching | `fdb88cd` | [Phase 3.6](PHASE_3_6_MEDIA_STREAMING.md) |
-| 3.7 | Account security, refresh token, profile và password/email flows | `c278588` | [Phase 3.7](PHASE_3_7_ACCOUNT_SECURITY_PROFILES.md) |
-| 3.8 | Personalization, search history, preferences và recommendations | Backend `7aca343`, frontend `fb5f790`, report `d5c5f58` | [Phase 3.8](PHASE_3_8_PERSONALIZATION_DISCOVERY.md) |
-| 3.9 | Admin CMS, user lifecycle, movie/category lifecycle và archive | Backend `b388488`, frontend `b4534e6`, report `b23da69` | [Phase 3.9](PHASE_3_9_ADMIN_CMS_LIFECYCLE.md) |
-| 3.10 | Subtitle/audio tracks, notifications, accessibility và media admin | Backend `3245655`, frontend `9017df7`, report `caf27a7` | [Phase 3.10](PHASE_3_10_TRACKS_NOTIFICATIONS_ACCESSIBILITY.md) |
-| 3.11 | Performance indexes, route code-splitting, SEO baseline và feature freeze | Backend `5d304ba`, frontend `b395f5f`, reports commit kế tiếp | [Phase 3.11](PHASE_3_11_PERFORMANCE_SEO_FEATURE_FREEZE.md) |
+| Phase | Kết quả chính                                                             | Commit đã push                                                | Báo cáo                                                        |
+| ----- | ------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------- |
+| 3.6   | Media metadata, streaming core, watch progress và Continue Watching       | `fdb88cd`                                                     | [Phase 3.6](PHASE_3_6_MEDIA_STREAMING.md)                      |
+| 3.7   | Account security, refresh token, profile và password/email flows          | `c278588`                                                     | [Phase 3.7](PHASE_3_7_ACCOUNT_SECURITY_PROFILES.md)            |
+| 3.8   | Personalization, search history, preferences và recommendations           | Backend `7aca343`, frontend `fb5f790`, report `d5c5f58`       | [Phase 3.8](PHASE_3_8_PERSONALIZATION_DISCOVERY.md)            |
+| 3.9   | Admin CMS, user lifecycle, movie/category lifecycle và archive            | Backend `b388488`, frontend `b4534e6`, report `b23da69`       | [Phase 3.9](PHASE_3_9_ADMIN_CMS_LIFECYCLE.md)                  |
+| 3.10  | Subtitle/audio tracks, notifications, accessibility và media admin        | Backend `3245655`, frontend `9017df7`, report `caf27a7`       | [Phase 3.10](PHASE_3_10_TRACKS_NOTIFICATIONS_ACCESSIBILITY.md) |
+| 3.11  | Performance indexes, route code-splitting, SEO baseline và feature freeze | Backend `5d304ba`, frontend `b395f5f`, reports commit kế tiếp | [Phase 3.11](PHASE_3_11_PERFORMANCE_SEO_FEATURE_FREEZE.md)     |
 
 ## Đã xác nhận được
 
