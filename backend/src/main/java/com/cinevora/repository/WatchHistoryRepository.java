@@ -2,10 +2,12 @@ package com.cinevora.repository;
 
 import com.cinevora.entity.WatchHistory;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface WatchHistoryRepository extends JpaRepository<WatchHistory, Long> {
-    List<WatchHistory> findByProfile_IdOrderByWatchedAtDesc(Long profileId);
+    @Query("select h from WatchHistory h join fetch h.movie where h.profile.id = :profileId order by h.watchedAt desc")
+    List<WatchHistory> findByProfile_IdOrderByWatchedAtDesc(@Param("profileId") Long profileId);
     boolean existsByProfile_IdAndMovie_Id(Long profileId, Long movieId);
     @Query("select h from WatchHistory h join fetch h.movie m where h.profile.id = :profileId order by h.watchedAt desc")
     List<WatchHistory> findRecentWithMovie(Long profileId);
