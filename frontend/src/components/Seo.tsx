@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { resolveMediaUrl } from "../lib/environment";
 
 type SeoProps = {
   title: string;
@@ -30,7 +31,7 @@ export function Seo({ title, description, image, jsonLd }: SeoProps) {
     upsertMeta("property", "og:title", title);
     upsertMeta("property", "og:description", description);
     upsertMeta("property", "og:type", "website");
-    if (image) upsertMeta("property", "og:image", image);
+    if (image) upsertMeta("property", "og:image", resolveMediaUrl(image)!);
     let canonical = document.head.querySelector<HTMLLinkElement>(
       "link[data-cinevora-canonical]",
     );
@@ -51,7 +52,7 @@ export function Seo({ title, description, image, jsonLd }: SeoProps) {
         script.dataset.cinevoraJsonld = "true";
         document.head.appendChild(script);
       }
-      script.textContent = JSON.stringify(jsonLd);
+      script.textContent = JSON.stringify({ ...jsonLd, ...(typeof jsonLd.image === 'string' ? { image: resolveMediaUrl(jsonLd.image) } : {}) });
     } else if (script) script.remove();
   }, [description, image, jsonLd, title]);
   return <span data-seo-page="true" hidden />;

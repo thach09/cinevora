@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Movie, MovieRef } from '../types/api'
 import { formatNumber } from '../lib/format'
+import { resolveMediaUrl } from '../lib/environment'
 
 type CardMovie = Movie | MovieRef
 const isMovie = (movie: CardMovie): movie is Movie => 'categoryName' in movie
@@ -34,7 +35,7 @@ export function PosterArtwork({ src, alt, title, className = '' }: { src?: strin
   return (
     <>
       {!showImage && <div className={`poster-fallback ${className}`} aria-hidden="true"><span>{title.slice(0, 1).toUpperCase()}</span></div>}
-      {showImage && <img className={className} src={src || undefined} alt={alt} loading="lazy" onLoad={() => setStatus('loaded')} onError={() => setStatus('error')} />}
+      {showImage && <img className={className} src={resolveMediaUrl(src)} alt={alt} loading="lazy" onLoad={() => setStatus('loaded')} onError={() => setStatus('error')} />}
     </>
   )
 }

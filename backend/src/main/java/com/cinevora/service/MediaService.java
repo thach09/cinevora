@@ -4,6 +4,8 @@ import com.cinevora.dto.MovieDtos;
 import com.cinevora.entity.Movie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -24,7 +26,7 @@ public class MediaService {
         try {
             movie.setThumbnailUrl(stored.url());
             MovieDtos.Response response = MovieDtos.Response.from(movie);
-            storage.deletePoster(previous);
+            cleanupAfterTransaction(previous, stored.url());
             return response;
         } catch (RuntimeException ex) {
             storage.deletePoster(stored.url());
@@ -37,7 +39,16 @@ public class MediaService {
         Movie movie = movies.getEntity(movieId);
         String previous = movie.getThumbnailUrl();
         movie.setThumbnailUrl(null);
-        storage.deletePoster(previous);
+        cleanupAfterTransaction(previous, null);
         return MovieDtos.Response.from(movie);
+    }
+
+    private void cleanupAfterTransaction(String previous, String uploaded) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCompletion(int status) {
+                if (status == STATUS_COMMITTED) storage.deletePoster(previous);
+                else if (status == STATUS_ROLLED_BACK && uploaded != null) storage.deletePoster(uploaded);
+            }
+        });
     }
 }

@@ -7,6 +7,7 @@ import { Button, EmptyState, QueryError, Spinner } from "../components/ui";
 import { formatNumber } from "../lib/format";
 import { Seo } from "../components/Seo";
 import { useAuthStore } from "../store/authStore";
+import { resolveMediaUrl } from "../lib/environment";
 
 export function BrowseMoviePage() {
   const [page, setPage] = useState(0);
@@ -176,7 +177,7 @@ function HeroArtwork({
         <span>{movie?.title.slice(0, 1).toUpperCase() || "C"}</span>
       </div>
       {movie?.thumbnailUrl && !failed && (
-        <img src={movie.thumbnailUrl} alt="" onError={() => setFailed(true)} />
+        <img src={resolveMediaUrl(movie.thumbnailUrl)} alt="" onError={() => setFailed(true)} />
       )}
     </div>
   );

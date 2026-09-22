@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getApiError, mediaApi } from '../lib/api'
 import { Button } from './ui'
 import { useToast } from './ToastProvider'
+import { resolveMediaUrl } from '../lib/environment'
 
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_SIZE = 5 * 1024 * 1024
@@ -33,7 +34,7 @@ export function PosterUpload({ movieId, currentUrl, onUpdated }: { movieId: numb
   }
 
   return <div className="poster-upload" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); choose(event.dataTransfer.files[0]) }}>
-    <div className="poster-upload-preview">{preview ? <img src={preview} alt="Poster preview" /> : <span>Drop poster here</span>}</div>
+    <div className="poster-upload-preview">{preview ? <img src={resolveMediaUrl(preview)} alt="Poster preview" /> : <span>Drop poster here</span>}</div>
     <div className="poster-upload-actions"><label className="btn btn-secondary cursor-pointer">Choose image<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => choose(event.target.files?.[0])} /></label>{file && <Button type="button" onClick={upload} disabled={saving}>{saving ? 'Uploading...' : 'Upload poster'}</Button>}{currentUrl && !file && <Button type="button" variant="danger" onClick={remove} disabled={saving}>Remove</Button>}</div>
     <p className="text-xs text-slate-500">JPG, PNG or WEBP · max 5 MB · drag and drop supported</p>
   </div>
