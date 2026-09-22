@@ -13,10 +13,11 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token
+  const auth = useAuthStore.getState()
+  const token = auth.token
   if (token) config.headers.Authorization = `Bearer ${token}`
-  const profileId = useAuthStore.getState().activeProfileId
-  if (profileId) config.headers['X-Profile-Id'] = String(profileId)
+  const profileId = auth.activeProfileId
+  if (profileId && auth.activeProfileUserId === auth.user?.id) config.headers['X-Profile-Id'] = String(profileId)
   return config
 })
 

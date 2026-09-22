@@ -16,6 +16,11 @@ public final class WikimediaPosterImporterTest {
         testNonPortraitImageIsRejected();
         testMissingPageIsNotFound();
         testPunctuationNormalization();
+        testProviderTitleVariants();
+        testLocalizedTitleAlias();
+        testOfficialPosterSources();
+        testSearchFallbackExactMatch();
+        testWikipediaFilmTitleWithoutYearSuffix();
         testDryRunDoesNotUpdate();
         testApplyPreservesAllNonPosterFields();
         testExistingPosterIsSkipped();
@@ -63,6 +68,49 @@ public final class WikimediaPosterImporterTest {
     private static void testPunctuationNormalization() {
         check(WikimediaPosterImporter.titleMatches("Spider-Man: No Way Home", "Spider Man No Way Home"),
                 "title normalization should ignore punctuation differences");
+    }
+
+    private static void testProviderTitleVariants() {
+        check(WikimediaPosterImporter.titleVariantMatches("Annabelle", "Annabelle (2014 film)"),
+                "provider year suffix should be accepted for an exact film title");
+        check(WikimediaPosterImporter.titleVariantMatches("Dune: Part One", "Dune (2021 film)"),
+                "Dune Part One should accept the canonical film page title");
+    }
+
+    private static void testLocalizedTitleAlias() {
+        check(WikimediaPosterImporter.titleVariantMatches("Mắt Biếc", "Dreamy Eyes (film)"),
+                "localized English film title should match Mắt Biếc");
+    }
+
+    private static void testOfficialPosterSources() {
+        WikimediaPosterImporter.PosterCandidate candidate = WikimediaPosterImporter.officialPoster(
+                movie("Bóng Đè", 2022, null));
+        check(candidate != null && WikimediaPosterImporter.isPortraitPoster(candidate)
+                        && WikimediaPosterImporter.isValidPosterUrl(candidate.posterUrl()),
+                "official rightsholder poster source should validate");
+    }
+
+    private static void testSearchFallbackExactMatch() {
+        WikimediaPosterImporter.Movie movie = movie("Annabelle", 2014, null);
+        WikimediaPosterImporter.PosterCandidate candidate = candidate("Annabelle (2014 film)", 2014,
+                "https://en.wikipedia.org/wiki/Annabelle_(film)", "https://upload.wikimedia.org/annabelle.jpg",
+                500, 750);
+        WikimediaPosterImporter.LookupResult result = WikimediaPosterImporter.resolveDirect(
+                movie, candidate, "standard", "2014 film");
+        check(result.status() == WikimediaPosterImporter.Status.MATCHED_HIGH_CONFIDENCE,
+                "exact fallback title/year/film evidence should match");
+    }
+
+    private static void testWikipediaFilmTitleWithoutYearSuffix() {
+        WikimediaPosterImporter.Movie movie = movie("Annabelle", 2014, null);
+        WikimediaPosterImporter.PosterCandidate candidate = candidate("Annabelle (film)", 2014,
+                "https://en.wikipedia.org/wiki/Annabelle_(film)",
+                "https://upload.wikimedia.org/wikipedia/en/9/90/Annabelle_film_poster.jpg?utm_source=test",
+                220, 326);
+        WikimediaPosterImporter.LookupResult result = WikimediaPosterImporter.resolveDirect(
+                movie, candidate, "standard", "2014 film directed by John R. Leonetti");
+        check(result.status() == WikimediaPosterImporter.Status.MATCHED_HIGH_CONFIDENCE,
+                "Wikipedia film title without a year suffix should match");
     }
 
     private static void testDryRunDoesNotUpdate() {

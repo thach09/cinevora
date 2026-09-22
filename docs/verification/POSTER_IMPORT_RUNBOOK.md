@@ -3,7 +3,9 @@
 This is a one-shot developer utility. Cinevora runtime does not call an
 external movie provider. The utility reads movies through the Cinevora API,
 queries the public Wikimedia Page Content Service / Wikipedia REST API, and
-updates only `thumbnailUrl` through the existing admin movie endpoint.
+updates only `thumbnailUrl` through the existing admin movie endpoint. A small
+allow-listed set of official rights-holder pages supplies posters when a
+Wikimedia result is unavailable or ambiguous.
 
 Wikimedia is used without an API key. Requests include a descriptive
 `User-Agent`, throttle requests to respect provider rate limits, use bounded

@@ -6,11 +6,11 @@ import { Button, Field, Input, QueryError, Spinner } from '../components/ui'
 import { useToast } from '../components/ToastProvider'
 
 export function AccountPage() {
-  const client = useQueryClient(); const { push } = useToast(); const setActiveProfile = useAuthStore((state) => state.setActiveProfile); const activeProfileId = useAuthStore((state) => state.activeProfileId)
-  const me = useQuery({ queryKey: ['account'], queryFn: accountApi.me }); const profiles = useQuery({ queryKey: ['profiles'], queryFn: profileApi.list }); const sessions = useQuery({ queryKey: ['sessions'], queryFn: accountApi.sessions })
+  const client = useQueryClient(); const { push } = useToast(); const userId = useAuthStore((state) => state.user?.id); const setActiveProfile = useAuthStore((state) => state.setActiveProfile); const activeProfileId = useAuthStore((state) => state.activeProfileId)
+  const me = useQuery({ queryKey: ['account', userId], queryFn: accountApi.me }); const profiles = useQuery({ queryKey: ['profiles', userId], queryFn: profileApi.list }); const sessions = useQuery({ queryKey: ['sessions', userId], queryFn: accountApi.sessions })
   const [fullName, setFullName] = useState(''); const [email, setEmail] = useState(''); const [newProfile, setNewProfile] = useState(''); const [currentPassword, setCurrentPassword] = useState(''); const [newPassword, setNewPassword] = useState('')
   useEffect(() => { if (me.data) { setFullName(me.data.fullName); setEmail(me.data.email) } }, [me.data])
-  const update = useMutation({ mutationFn: () => accountApi.update({ fullName, email }), onSuccess: (data) => { client.setQueryData(['account'], data); push('Profile updated.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
+  const update = useMutation({ mutationFn: () => accountApi.update({ fullName, email }), onSuccess: (data) => { client.setQueryData(['account', userId], data); push('Profile updated.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   const password = useMutation({ mutationFn: () => accountApi.changePassword({ currentPassword, newPassword }), onSuccess: () => { setCurrentPassword(''); setNewPassword(''); push('Password updated. Other sessions were revoked.', 'success'); client.invalidateQueries({ queryKey: ['sessions'] }) }, onError: (error) => push(getApiError(error), 'error') })
   const create = useMutation({ mutationFn: () => profileApi.create({ name: newProfile }), onSuccess: (profile) => { setNewProfile(''); client.invalidateQueries({ queryKey: ['profiles'] }); setActiveProfile(profile.id); push('Profile created.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   const remove = useMutation({ mutationFn: profileApi.remove, onSuccess: () => { client.invalidateQueries({ queryKey: ['profiles'] }); push('Profile removed.', 'success') }, onError: (error) => push(getApiError(error), 'error') })

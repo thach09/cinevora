@@ -35,7 +35,8 @@ export function AppLayout({ children }: { children?: ReactNode }) {
   const refreshToken = useAuthStore((state) => state.refreshToken)
   const activeProfileId = useAuthStore((state) => state.activeProfileId)
   const setActiveProfile = useAuthStore((state) => state.setActiveProfile)
-  const profiles = useQuery({ queryKey: ['profiles'], queryFn: profileApi.list, enabled: Boolean(user) })
+  const queryClient = useQueryClient()
+  const profiles = useQuery({ queryKey: ['profiles', user?.id], queryFn: profileApi.list, enabled: Boolean(user) })
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,10 +58,12 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
   useEffect(() => {
     const defaultProfile = profiles.data?.find((profile) => profile.defaultProfile) || profiles.data?.[0]
-    if (!activeProfileId && defaultProfile) setActiveProfile(defaultProfile.id)
+    const activeProfileIsOwned = activeProfileId != null && profiles.data?.some((profile) => profile.id === activeProfileId)
+    if (defaultProfile && !activeProfileIsOwned) setActiveProfile(defaultProfile.id)
   }, [activeProfileId, profiles.data, setActiveProfile])
 
   const signOut = () => {
+    queryClient.clear()
     void authApi.logout(refreshToken).finally(() => { logout(); navigate("/login"); })
   };
 

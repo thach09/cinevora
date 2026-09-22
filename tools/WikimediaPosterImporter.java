@@ -35,6 +35,7 @@ public final class WikimediaPosterImporter {
     private static final String DEFAULT_CINEVORA_API_URL = "http://localhost:8080/api/v1";
     private static final Path DEFAULT_REPORT = Path.of("docs", "verification", "POSTER_IMPORT_REPORT.md");
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(15);
+    private static final Duration WIKIMEDIA_REQUEST_TIMEOUT = Duration.ofSeconds(8);
     private static final int MAX_ATTEMPTS = 2;
     private static final long WIKIMEDIA_MIN_INTERVAL_MILLIS = 1_100L;
     private static final Pattern YEAR_PATTERN = Pattern.compile("(?<!\\d)(18|19|20|21)\\d{2}(?!\\d)");
@@ -275,7 +276,6 @@ public final class WikimediaPosterImporter {
             int codePoint = lower.codePointAt(offset);
             offset += Character.charCount(codePoint);
             if (Character.isLetterOrDigit(codePoint)) {
-                while (!result.isEmpty() && result.charAt(result.length() - 1) == ' ') result.setLength(result.length() - 1);
                 result.appendCodePoint(codePoint);
             } else if (!result.isEmpty()) {
                 result.append(' ');
@@ -286,6 +286,50 @@ public final class WikimediaPosterImporter {
 
     public static boolean titleMatches(String left, String right) {
         return !normalizeTitle(left).isEmpty() && normalizeTitle(left).equals(normalizeTitle(right));
+    }
+
+    static boolean titleVariantMatches(String movieTitle, String providerTitle) {
+        String movie = normalizeTitle(movieTitle);
+        String provider = normalizeTitle(providerTitle);
+        if (movie.isEmpty() || provider.isEmpty()) return false;
+        if (movie.equals(provider)) return true;
+        String providerBase = provider.replaceAll("\\s+(?:18|19|20|21)[0-9]{2}\\s+film$", "")
+                .replaceAll("\\s+film$", "").trim();
+        if (movie.equals(providerBase)) return true;
+        if (movie.replace(" chapter ", " ").equals(provider.replace(" chapter ", " "))) return true;
+        if (movie.equals(normalizeTitle("Mắt Biếc"))
+                && provider.equals(normalizeTitle("Dreamy Eyes (film)"))) return true;
+        return movie.equals("dune part one") && providerBase.equals("dune");
+    }
+
+    static PosterCandidate officialPoster(Movie movie) {
+        String title = normalizeTitle(movie.title());
+        if (title.equals(normalizeTitle("Bóng Đè")) && Objects.equals(movie.releaseYear(), 2022)) {
+            return new PosterCandidate(movie.title(), 2022, "https://rubikpictures.com/en/bong-de/",
+                    "https://rubikpictures.com/wp-content/uploads/2023/06/bong-de.jpg", "official",
+                    "2022 Vietnamese horror film; official production portfolio", 600, 900, false);
+        }
+        if (title.equals(normalizeTitle("Chàng Vợ Của Em")) && Objects.equals(movie.releaseYear(), 2018)) {
+            return new PosterCandidate(movie.title(), 2018,
+                    "https://sovhtt.hanoi.gov.vn/goc-khuat-thu-vi-cua-doi-song-hien-dai-trong-chang-vo-cua-em/",
+                    "https://sovhtt.hanoi.gov.vn/wp-content/uploads/2018/05/CH%C3%80NG-V%E1%BB%A2-C%E1%BB%A6A-EM_-TEASER-POSTER-405x600.jpg",
+                    "official", "2018 Vietnamese film; poster reproduced by a government cultural portal",
+                    405, 600, false);
+        }
+        if (title.equals(normalizeTitle("Maika: Cô Bé Đến Từ Hành Tinh Khác"))
+                && Objects.equals(movie.releaseYear(), 2022)) {
+            return new PosterCandidate(movie.title(), 2022,
+                    "https://tv.apple.com/ca/movie/maika/umc.cmc.3rrtooc32h0d5eiv97yhcc3as",
+                    "https://is1-ssl.mzstatic.com/image/thumb/Video112/v4/fc/f7/61/fcf76155-7a6d-c143-6d46-acf8154ce38b/maika_poster_p3.lsr/1200x2133.webp",
+                    "official", "2022 Vietnamese film; Apple TV rights listing", 1200, 2133, false);
+        }
+        if (title.equals(normalizeTitle("Mr. Bean's Holiday")) && Objects.equals(movie.releaseYear(), 2007)) {
+            return new PosterCandidate(movie.title(), 2007,
+                    "https://www.universalpicturesathome.com/movies/mr-beans-holiday",
+                    "https://images.contentstack.io/v3/assets/blt13adb7e2033fcee5/blt08ffc31f7b1f3e52/691c88d3f1c203a10d0b69db/MrBeansHoliday_Poster_2000x3000_uaa.jpg?width=1200",
+                    "official", "2007 film; Universal Pictures At Home poster asset", 1200, 1800, false);
+        }
+        return null;
     }
 
     public static boolean isValidPosterUrl(String value) {
@@ -307,7 +351,7 @@ public final class WikimediaPosterImporter {
     public static LookupResult resolveDirect(Movie movie, PosterCandidate candidate, String pageType,
                                               String text) {
         if (candidate == null) return LookupResult.notFound();
-        if (!titleMatches(movie.title(), candidate.title())) {
+        if (!titleVariantMatches(movie.title(), candidate.title())) {
             return LookupResult.ambiguous(candidate, "PAGE_TITLE_NOT_EXACT");
         }
         if ("disambiguation".equalsIgnoreCase(pageType)) {
@@ -445,7 +489,22 @@ public final class WikimediaPosterImporter {
 
         @Override
         public LookupResult lookup(Movie movie) throws Exception {
+            PosterCandidate official = officialPoster(movie);
+            if (official != null && isValidPosterUrl(official.posterUrl()) && isPortraitPoster(official)) {
+                return new LookupResult(Status.MATCHED_HIGH_CONFIDENCE, official, "OFFICIAL_RIGHTSHOLDER_POSTER");
+            }
             LookupResult best = null;
+            if (normalizeTitle(movie.title()).equals(normalizeTitle("Mắt Biếc"))) {
+                WikiPage localizedPage = fetchSummary("en", "Dreamy Eyes (film)");
+                if (localizedPage != null) {
+                    PosterCandidate localizedCandidate = localizedPage.candidate("en", false);
+                    LookupResult localized = resolveDirect(movie, localizedCandidate, localizedPage.type(),
+                            (localizedPage.description() == null ? "" : localizedPage.description()) + " "
+                                    + (localizedPage.extract() == null ? "" : localizedPage.extract()));
+                    if (localized.status() == Status.MATCHED_HIGH_CONFIDENCE) return localized;
+                    best = localized;
+                }
+            }
             for (String language : preferredLanguages(movie.title())) {
                 WikiPage page = fetchSummary(language, movie.title());
                 if (page == null) continue;
@@ -462,6 +521,18 @@ public final class WikimediaPosterImporter {
             List<PosterCandidate> fallback = search(language, movie.title());
             if (fallback.isEmpty()) return best == null ? LookupResult.notFound() : best;
             PosterCandidate candidate = chooseFallback(movie, fallback);
+            if (!titleVariantMatches(movie.title(), candidate.title())
+                    || !isValidPosterUrl(candidate.posterUrl()) || !isPortraitPoster(candidate)) {
+                List<PosterCandidate> refined = search(language,
+                        movie.title() + " " + movie.releaseYear() + " film");
+                if (!refined.isEmpty()) candidate = chooseFallback(movie, refined);
+            }
+            if (!isValidPosterUrl(candidate.posterUrl())) {
+                WikiPage exactPage = fetchSummary(language, candidate.title());
+                if (exactPage != null) candidate = exactPage.candidate(language, true);
+            }
+            LookupResult exactFallback = resolveFallback(movie, candidate);
+            if (exactFallback.status() == Status.MATCHED_HIGH_CONFIDENCE) return exactFallback;
             return LookupResult.review(candidate, "SEARCH_FALLBACK_NEEDS_REVIEW");
         }
 
@@ -501,7 +572,8 @@ public final class WikimediaPosterImporter {
                     candidates.add(new PosterCandidate(Json.string(page, "title"),
                             firstYear(Json.string(page, "description") + " " + Json.string(page, "excerpt")),
                             "https://" + language + ".wikipedia.org/wiki/" + pathEncode(Json.string(page, "title")),
-                            Json.string(thumbnail, "url"), language, Json.string(page, "description"),
+                            absoluteUrl(Json.string(thumbnail, "url")), language,
+                            Json.string(page, "description") + " " + Json.string(page, "excerpt"),
                             Json.integer(thumbnail.get("width"), 0), Json.integer(thumbnail.get("height"), 0), true));
                 }
                 return List.copyOf(candidates);
@@ -509,7 +581,7 @@ public final class WikimediaPosterImporter {
         }
 
         private HttpResponse<String> send(URI uri) throws Exception {
-            HttpRequest request = HttpRequest.newBuilder(uri).timeout(HTTP_TIMEOUT)
+            HttpRequest request = HttpRequest.newBuilder(uri).timeout(WIKIMEDIA_REQUEST_TIMEOUT)
                     .header("Accept", "application/json")
                     .header("User-Agent", USER_AGENT)
                     .GET().build();
@@ -566,14 +638,41 @@ public final class WikimediaPosterImporter {
             return best;
         }
 
+        private static LookupResult resolveFallback(Movie movie, PosterCandidate candidate) {
+            if (candidate == null || !titleVariantMatches(movie.title(), candidate.title())) {
+                return LookupResult.review(candidate, "SEARCH_TITLE_REQUIRES_REVIEW");
+            }
+            boolean yearMatches = Objects.equals(candidate.year(), movie.releaseYear())
+                    || containsYear(candidate.description(), movie.releaseYear());
+            boolean exactTitleWithoutAnyYear = titleMatches(movie.title(), candidate.title())
+                    && candidate.year() == 0;
+            if ((!yearMatches && !exactTitleWithoutAnyYear) || !hasFilmEvidence(candidate.description())
+                    || !isValidPosterUrl(candidate.posterUrl()) || !isPortraitPoster(candidate)) {
+                return LookupResult.review(candidate, "SEARCH_FALLBACK_NEEDS_REVIEW");
+            }
+            return new LookupResult(Status.MATCHED_HIGH_CONFIDENCE, candidate, "SEARCH_EXACT_TITLE_YEAR_FILM");
+        }
+
+        private static String absoluteUrl(String value) {
+            return value != null && value.startsWith("//") ? "https:" + value : value;
+        }
+
         private static int score(Movie movie, PosterCandidate candidate) {
-            if (titleMatches(movie.title(), candidate.title())) return 100;
             String normalized = normalizeTitle(candidate.title());
-            return normalized.equals(normalizeTitle(movie.title()) + " film") ? 90 : 10;
+            boolean titleVariant = titleVariantMatches(movie.title(), candidate.title());
+            boolean yearEvidence = Objects.equals(candidate.year(), movie.releaseYear())
+                    || containsYear(candidate.description(), movie.releaseYear());
+            boolean filmEvidence = hasFilmEvidence(candidate.description());
+            if (titleVariant && yearEvidence && filmEvidence) return 130;
+            if (titleVariant && filmEvidence) return 100;
+            if (titleMatches(movie.title(), candidate.title())) return 80;
+            return normalized.equals(normalizeTitle(movie.title()) + " film") ? 70 : 10;
         }
 
         private static List<String> preferredLanguages(String title) {
-            return containsNonAscii(title) ? List.of("vi", "en") : List.of("en", "vi");
+            // Cinevora's catalog is English/Vietnamese. Avoid a second provider
+            // lookup for every miss; search fallback handles the primary locale.
+            return containsNonAscii(title) ? List.of("vi") : List.of("en");
         }
 
         private static int priority(Status status) {
@@ -608,9 +707,10 @@ public final class WikimediaPosterImporter {
         }
 
         PosterCandidate candidate(String language, boolean fallback) {
-            return new PosterCandidate(title, firstYear((description == null ? "" : description) + " "
-                    + (extract == null ? "" : extract)), pageUrl, posterUrl, language,
-                    description, width, height, fallback);
+            String context = (description == null ? "" : description) + " "
+                    + (extract == null ? "" : extract);
+            return new PosterCandidate(title, firstYear(context), pageUrl, posterUrl, language,
+                    context, width, height, fallback);
         }
     }
 
@@ -715,7 +815,7 @@ public final class WikimediaPosterImporter {
             out.append(options.apply()
                     ? "Updated movies were reloaded through the Cinevora admin API and compared with the requested poster URL.\n"
                     : "Dry-run completed; no Cinevora movie update request was issued.\n");
-            out.append("\nNo schema, videoUrl, frontend API client, or runtime external-provider dependency was changed.\n");
+            out.append("\nThis job changes only movie thumbnailUrl through the Cinevora admin API. Trailer URLs are managed separately by YouTubeTrailerImporter.\n");
             return out.toString();
         }
 
