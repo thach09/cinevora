@@ -1,0 +1,54 @@
+name: Integration CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    uses: ./.github/workflows/backend-ci.yml
+  frontend:
+    uses: ./.github/workflows/frontend-ci.yml
+  integration:
+    needs: [backend, frontend]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CINEVORA_API_URL: http://localhost:18086/api/v1
+      CINEVORA_FRONTEND_URL: http://localhost:18088
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: docker compose --env-file compose.ci.env config --quiet
+      - run: docker compose --env-file compose.ci.env up --build -d --wait --wait-timeout 180
+      - run: docker compose --env-file compose.ci.env --profile tools run --rm flyway validate
+      - run: npm ci && npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run e2e
+        working-directory: frontend
+      - run: node tools/deployment/verify-runtime.mjs
+      - run: docker compose --env-file compose.ci.env restart backend
+      - run: docker compose --env-file compose.ci.env up -d --wait --wait-timeout 120
+      - run: node tools/deployment/verify-runtime.mjs --after-restart
+      - run: docker compose --env-file compose.ci.env logs --no-color
+        if: failure()
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: failure()
+        with:
+          name: browser-failures
+          path: frontend/test-results/
+          retention-days: 3
+      - run: docker compose --env-file compose.ci.env down
+        if: always()

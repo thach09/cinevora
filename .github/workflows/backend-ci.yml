@@ -1,0 +1,47 @@
+name: Backend CI
+on:
+  push:
+    paths: ['backend/**', '.github/workflows/backend-ci.yml']
+  pull_request:
+    paths: ['backend/**', '.github/workflows/backend-ci.yml']
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+        env:
+          POSTGRES_DB: cinevora_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d cinevora_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      CINEVORA_DB_TESTS: 'true'
+      CINEVORA_TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/cinevora_ci
+      CINEVORA_TEST_DATABASE_USER: postgres
+      CINEVORA_TEST_DATABASE_PASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - run: mvn -B -ntp clean test && mvn -B -ntp package
+        working-directory: backend
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/*.xml
+          retention-days: 7

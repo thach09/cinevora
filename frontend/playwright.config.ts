@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const chromePath = process.env.CINEVORA_CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+const chromePath = process.env.CINEVORA_CHROME_PATH || (process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : undefined)
 
 export default defineConfig({
   testDir: './tests/e2e',
