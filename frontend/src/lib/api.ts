@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { apiBaseUrl } from './environment'
 import { useAuthStore } from '../store/authStore'
 import type {
   ApiResponse, AuthResponse, Category, ContinueEntry, HistoryEntry, LoginRequest,
@@ -8,7 +9,7 @@ import type {
 } from '../types/api'
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
+  baseURL: apiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -115,6 +116,7 @@ export interface MoviePayload {
   rating: number
   durationMinutes?: number
   videoUrl?: string
+  trailerUrl?: string
   thumbnailUrl?: string
   description?: string
 }

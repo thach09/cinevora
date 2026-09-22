@@ -14,8 +14,8 @@ public final class YouTubeTrailerImporterTest {
         testYouTubeUrlValidation();
         testTitleNormalization();
         testDryRunDoesNotUpdate();
-        testApplyPreservesAllNonVideoFields();
-        testExistingVideoIsSkipped();
+        testApplyPreservesAllNonTrailerFields();
+        testExistingTrailerIsSkipped();
         System.out.println("YouTubeTrailerImporterTest: " + passed + " assertions passed");
     }
 
@@ -44,7 +44,7 @@ public final class YouTubeTrailerImporterTest {
         check(cinevora.updateCount == 0, "dry-run must not issue update request");
     }
 
-    private static void testApplyPreservesAllNonVideoFields() {
+    private static void testApplyPreservesAllNonTrailerFields() {
         FakeCinevora cinevora = new FakeCinevora();
         List<YouTubeTrailerImporter.ImportResult> results = YouTubeTrailerImporter.runImport(
                 List.of(movie(null)), provider(), cinevora, "token",
@@ -52,20 +52,22 @@ public final class YouTubeTrailerImporterTest {
         check(results.get(0).applied(), "apply mode should mark update as applied");
         check("https://upload.wikimedia.org/poster.jpg".equals(cinevora.lastPayload.get("thumbnailUrl")),
                 "thumbnailUrl must be preserved");
-        check("https://www.youtube.com/watch?v=JfVOs4VSpmA".equals(cinevora.lastPayload.get("videoUrl")),
-                "videoUrl should receive the curated trailer");
+        check("https://www.youtube.com/watch?v=JfVOs4VSpmA".equals(cinevora.lastPayload.get("trailerUrl")),
+                "trailerUrl should receive the curated trailer");
+        check(cinevora.lastPayload.get("videoUrl") == null,
+                "Watch Now videoUrl must remain separate");
         check(Long.valueOf(2).equals(cinevora.lastPayload.get("categoryId")),
                 "categoryId must be preserved");
     }
 
-    private static void testExistingVideoIsSkipped() {
+    private static void testExistingTrailerIsSkipped() {
         FakeCinevora cinevora = new FakeCinevora();
         List<YouTubeTrailerImporter.ImportResult> results = YouTubeTrailerImporter.runImport(
-                List.of(movie("https://existing.example/trailer.mp4")), provider(), cinevora, "token",
+                List.of(movie(null, "https://existing.example/trailer.mp4")), provider(), cinevora, "token",
                 new YouTubeTrailerImporter.Options(false, false, null, null));
         check(results.get(0).status() == YouTubeTrailerImporter.Status.ALREADY_HAS_TRAILER,
-                "existing videoUrl should be skipped by default");
-        check(cinevora.updateCount == 0, "existing videoUrl should not be overwritten by default");
+                "existing trailerUrl should be skipped by default");
+        check(cinevora.updateCount == 0, "existing trailerUrl should not be overwritten by default");
     }
 
     private static YouTubeTrailerImporter.TrailerProvider provider() {
@@ -75,8 +77,13 @@ public final class YouTubeTrailerImporterTest {
     }
 
     private static YouTubeTrailerImporter.Movie movie(String videoUrl) {
+        return movie(videoUrl, null);
+    }
+
+    private static YouTubeTrailerImporter.Movie movie(String videoUrl, String trailerUrl) {
         return new YouTubeTrailerImporter.Movie(7L, 2L, "Spider-Man: No Way Home", "Director", "Actor", 2021,
-                new BigDecimal("8.2"), 148, videoUrl, "https://upload.wikimedia.org/poster.jpg", "Description", true);
+                new BigDecimal("8.2"), 148, videoUrl, trailerUrl,
+                "https://upload.wikimedia.org/poster.jpg", "Description", true);
     }
 
     private static void check(boolean condition, String message) {
@@ -89,9 +96,9 @@ public final class YouTubeTrailerImporterTest {
         private Map<String, Object> lastPayload = Map.of();
 
         @Override
-        public void updateVideo(YouTubeTrailerImporter.Movie movie, String videoUrl, String token) {
+        public void updateTrailer(YouTubeTrailerImporter.Movie movie, String trailerUrl, String token) {
             updateCount++;
-            lastPayload = movie.updatePayload(videoUrl);
+            lastPayload = movie.updatePayload(trailerUrl);
         }
 
         @Override

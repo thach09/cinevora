@@ -18,6 +18,7 @@ public class Movie {
     @Column(name = "favourites_count", nullable = false) private Long favouritesCount = 0L;
     @Column(name = "duration_minutes") private Integer durationMinutes;
     @Column(name = "video_url", length = 500) private String videoUrl;
+    @Column(name = "trailer_url", length = 500) private String trailerUrl;
     @Column(name = "thumbnail_url", length = 500) private String thumbnailUrl;
     @Column(columnDefinition = "TEXT") private String description;
     @Column(name = "is_active", nullable = false) private boolean active = true;
@@ -47,6 +48,8 @@ public class Movie {
     public void setDurationMinutes(Integer durationMinutes) { this.durationMinutes = durationMinutes; }
     public String getVideoUrl() { return videoUrl; }
     public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
+    public String getTrailerUrl() { return trailerUrl; }
+    public void setTrailerUrl(String trailerUrl) { this.trailerUrl = trailerUrl; }
     public String getThumbnailUrl() { return thumbnailUrl; }
     public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
     public String getDescription() { return description; }

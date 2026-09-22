@@ -10,6 +10,8 @@ type SubtitleTrack = {
   default?: boolean;
 };
 
+export type PlaybackMode = "WATCH" | "TRAILER";
+
 function getYouTubeVideoId(source: string) {
   try {
     const url = new URL(source);
@@ -30,12 +32,14 @@ function getYouTubeVideoId(source: string) {
 export function VideoPlayer({
   movieId,
   src,
+  mode,
   initialPositionSeconds = 0,
   onSaved,
   subtitles = [],
 }: {
   movieId: number;
   src: string;
+  mode: PlaybackMode;
   initialPositionSeconds?: number;
   onSaved?: () => void;
   subtitles?: SubtitleTrack[];
@@ -55,9 +59,12 @@ export function VideoPlayer({
     queryKey: ["movie-tracks", movieId],
     queryFn: () => trackApi.list(movieId),
     staleTime: 300_000,
+    enabled: mode === "WATCH",
   });
   const audioTracks =
-    tracks.data?.filter((track) => track.kind === "AUDIO") || [];
+    mode === "WATCH"
+      ? tracks.data?.filter((track) => track.kind === "AUDIO") || []
+      : [];
   const selectedAudio =
     audioTracks.find((track) => track.id === audioTrackId) ||
     audioTracks.find((track) => track.defaultTrack);
@@ -76,6 +83,7 @@ export function VideoPlayer({
     async (force = false) => {
       const video = videoRef.current;
       if (
+        mode !== "WATCH" ||
         !video ||
         !Number.isFinite(video.duration) ||
         video.duration <= 0 ||
@@ -102,10 +110,11 @@ export function VideoPlayer({
         saveInFlight.current = false;
       }
     },
-    [movieId, onSaved],
+    [mode, movieId, onSaved],
   );
 
   useEffect(() => {
+    if (mode !== "WATCH") return;
     const handleVisibility = () => {
       if (document.visibilityState === "hidden") void saveProgress(true);
     };
@@ -119,9 +128,9 @@ export function VideoPlayer({
       window.removeEventListener("pagehide", handlePageHide);
       void saveProgress(true);
     };
-  }, [saveProgress]);
+  }, [mode, saveProgress]);
 
-  if (youtubeVideoId) {
+  if (youtubeVideoId && mode === "TRAILER") {
     return (
       <div className="video-player surface">
         <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
@@ -135,8 +144,19 @@ export function VideoPlayer({
           />
         </div>
         <p className="video-caption-note mt-3">
-          Trailer hosted by YouTube. Playback progress is available for direct
-          video sources.
+          Trailer hosted by YouTube. This promotional playback does not update
+          watch history or Continue Watching.
+        </p>
+      </div>
+    );
+  }
+
+  if (youtubeVideoId && mode === "WATCH") {
+    return (
+      <div className="video-player surface">
+        <p className="video-error" role="status">
+          Watch Now requires a direct video source. YouTube links are supported
+          as trailers only.
         </p>
       </div>
     );
@@ -147,6 +167,7 @@ export function VideoPlayer({
     if (!video) return;
     setDuration(video.duration);
     if (
+      mode === "WATCH" &&
       initialPositionSeconds > 0 &&
       initialPositionSeconds < video.duration * 0.9
     )
@@ -238,7 +259,7 @@ export function VideoPlayer({
         >
           {muted ? "Unmute" : "Mute"}
         </Button>
-        {audioTracks.length > 0 && (
+        {mode === "WATCH" && audioTracks.length > 0 && (
           <label className="video-rate">
             Audio
             <select
@@ -279,6 +300,11 @@ export function VideoPlayer({
           </span>
         )}
       </div>
+      {mode === "TRAILER" && (
+        <p className="video-caption-note mt-3">
+          Trailer playback does not update watch history or Continue Watching.
+        </p>
+      )}
       {error && (
         <p className="video-error" role="status">
           {error}

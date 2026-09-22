@@ -77,15 +77,16 @@ public final class YouTubeTrailerImporter {
     }
 
     public interface CinevoraGateway {
-        void updateVideo(Movie movie, String videoUrl, String token) throws Exception;
+        void updateTrailer(Movie movie, String trailerUrl, String token) throws Exception;
 
         List<Movie> loadActiveMovies(String token) throws Exception;
     }
 
     public record Movie(Long id, Long categoryId, String title, String director, String actors,
                         Integer releaseYear, BigDecimal rating, Integer durationMinutes, String videoUrl,
+                        String trailerUrl,
                         String thumbnailUrl, String description, boolean active) {
-        public Map<String, Object> updatePayload(String videoUrl) {
+        public Map<String, Object> updatePayload(String trailerUrl) {
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("title", title);
             payload.put("categoryId", categoryId);
@@ -95,6 +96,7 @@ public final class YouTubeTrailerImporter {
             payload.put("rating", rating);
             payload.put("durationMinutes", durationMinutes);
             payload.put("videoUrl", videoUrl);
+            payload.put("trailerUrl", trailerUrl);
             payload.put("thumbnailUrl", thumbnailUrl);
             payload.put("description", description);
             return payload;
@@ -195,7 +197,7 @@ public final class YouTubeTrailerImporter {
                                                 CinevoraGateway cinevora, String token, Options options) {
         List<ImportResult> results = new ArrayList<>();
         for (Movie movie : movies) {
-            if (!options.force() && hasVideo(movie.videoUrl())) {
+            if (!options.force() && hasTrailer(movie.trailerUrl())) {
                 results.add(ImportResult.skipped(movie));
                 continue;
             }
@@ -203,7 +205,7 @@ public final class YouTubeTrailerImporter {
                 LookupResult lookup = provider.lookup(movie);
                 ImportResult result = ImportResult.fromLookup(movie, lookup);
                 if (options.apply() && result.status() == Status.MATCHED_CURATED_SOURCE) {
-                    cinevora.updateVideo(movie, result.candidate().videoUrl(), token);
+                    cinevora.updateTrailer(movie, result.candidate().videoUrl(), token);
                     result = result.withApplied(true);
                 }
                 results.add(result);
@@ -214,7 +216,7 @@ public final class YouTubeTrailerImporter {
         return List.copyOf(results);
     }
 
-    public static boolean hasVideo(String value) {
+    public static boolean hasTrailer(String value) {
         return value != null && !value.isBlank();
     }
 
@@ -400,10 +402,10 @@ public final class YouTubeTrailerImporter {
         }
 
         @Override
-        public void updateVideo(Movie movie, String videoUrl, String token) throws Exception {
-            if (!isValidTrailerUrl(videoUrl)) throw new ApiFailure("Invalid trailer URL for movie " + movie.id());
+        public void updateTrailer(Movie movie, String trailerUrl, String token) throws Exception {
+            if (!isValidTrailerUrl(trailerUrl)) throw new ApiFailure("Invalid trailer URL for movie " + movie.id());
             HttpResponse<String> response = request("PUT", baseUrl + "/movies/" + movie.id(), token,
-                    WikimediaPosterImporter.Json.stringify(movie.updatePayload(videoUrl)));
+                    WikimediaPosterImporter.Json.stringify(movie.updatePayload(trailerUrl)));
             requireSuccess(response, "Cinevora update movie " + movie.id());
         }
 
@@ -427,6 +429,7 @@ public final class YouTubeTrailerImporter {
                     WikimediaPosterImporter.Json.decimal(object.get("rating")),
                     WikimediaPosterImporter.Json.integer(object.get("durationMinutes"), null),
                     WikimediaPosterImporter.Json.string(object, "videoUrl"),
+                    WikimediaPosterImporter.Json.string(object, "trailerUrl"),
                     WikimediaPosterImporter.Json.string(object, "thumbnailUrl"),
                     WikimediaPosterImporter.Json.string(object, "description"),
                     WikimediaPosterImporter.Json.bool(object.get("active")));
@@ -454,7 +457,7 @@ public final class YouTubeTrailerImporter {
             for (Movie movie : cinevora.loadActiveMovies(token)) reloaded.put(movie.id(), movie);
             for (ImportResult result : results) if (result.applied()) {
                 Movie movie = reloaded.get(result.movie().id());
-                result.setVerified(movie != null && Objects.equals(movie.videoUrl(), expected.get(result.movie().id())));
+                result.setVerified(movie != null && Objects.equals(movie.trailerUrl(), expected.get(result.movie().id())));
             }
         } catch (Exception e) {
             for (ImportResult result : results) if (result.applied()) result.setVerificationError(safeCategory(e));
@@ -507,7 +510,7 @@ public final class YouTubeTrailerImporter {
             out.append("## Summary\n\n| Metric | Count |\n|---|---:|\n| TOTAL | ").append(results.size()).append(" |\n");
             for (Status status : Status.values()) out.append('|').append(status).append('|')
                     .append(counts.getOrDefault(status, 0)).append("|\n");
-            out.append("\n## Decisions\n\n| ID | Cinevora title | Source | Video URL | Decision | Applied | Verified | Reason |\n");
+            out.append("\n## Decisions\n\n| ID | Cinevora title | Source | Trailer URL | Decision | Applied | Verified | Reason |\n");
             out.append("|---:|---|---|---|---|---|---|---|\n");
             for (ImportResult result : results) {
                 TrailerCandidate candidate = result.candidate();
@@ -522,7 +525,7 @@ public final class YouTubeTrailerImporter {
                         .append(verified).append('|').append(cell(reason)).append("|\n");
             }
             out.append("\nYouTube rows are stored as public watch URLs and rendered through the YouTube privacy-enhanced embed. ");
-            out.append("The direct MP4 row is hosted by the movie production site. Existing `videoUrl` values are skipped by default.\n");
+            out.append("The direct MP4 row is hosted by the movie production site. Existing `trailerUrl` values are skipped by default.\n");
             return out.toString();
         }
     }

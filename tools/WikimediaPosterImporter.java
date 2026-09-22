@@ -130,7 +130,7 @@ public final class WikimediaPosterImporter {
 
     public record Movie(Long id, Long categoryId, String title, String director, String actors,
                         Integer releaseYear, BigDecimal rating, Integer durationMinutes,
-                        String videoUrl, String thumbnailUrl, String description, boolean active) {
+                        String videoUrl, String trailerUrl, String thumbnailUrl, String description, boolean active) {
         public Map<String, Object> updatePayload(String posterUrl) {
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("title", title);
@@ -141,6 +141,7 @@ public final class WikimediaPosterImporter {
             payload.put("rating", rating);
             payload.put("durationMinutes", durationMinutes);
             payload.put("videoUrl", videoUrl);
+            payload.put("trailerUrl", trailerUrl);
             payload.put("thumbnailUrl", posterUrl);
             payload.put("description", description);
             return payload;
@@ -467,6 +468,7 @@ public final class WikimediaPosterImporter {
                     Json.string(object, "title"), Json.string(object, "director"), Json.string(object, "actors"),
                     Json.integer(object.get("releaseYear"), null), Json.decimal(object.get("rating")),
                     Json.integer(object.get("durationMinutes"), null), Json.string(object, "videoUrl"),
+                    Json.string(object, "trailerUrl"),
                     Json.string(object, "thumbnailUrl"), Json.string(object, "description"), Json.bool(object.get("active")));
         }
 

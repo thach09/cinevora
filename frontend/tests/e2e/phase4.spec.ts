@@ -1,6 +1,6 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test'
 
-const API_BASE = process.env.CINEVORA_API_URL || 'http://localhost:18080/api/v1'
+const API_BASE = process.env.CINEVORA_API_URL || 'http://localhost:8080/api/v1'
 const DEMO_PASSWORD = 'Cinevora@2026'
 const ADMIN = { username: 'admin', password: DEMO_PASSWORD }
 const CUSTOMER = { username: 'thietthach09', password: DEMO_PASSWORD }
@@ -59,7 +59,36 @@ async function cleanupAdminContent(request: APIRequestContext, movieId?: number,
   if (categoryId) await request.patch(`${API_BASE}/admin/categories/${categoryId}/status`, { headers, data: { active: false } })
 }
 
+async function createMovieFixture(request: APIRequestContext, title: string, categoryId: number, trailerUrl?: string) {
+  const auth = await apiLogin(request, ADMIN)
+  const response = await request.post(`${API_BASE}/movies`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+    data: {
+      title,
+      categoryId,
+      director: 'Phase 4 Director',
+      actors: 'Phase 4 Cast',
+      releaseYear: 2026,
+      rating: 8.8,
+      durationMinutes: 95,
+      videoUrl: 'data:video/mp4;base64,AAAA',
+      trailerUrl,
+      description: 'Created by the Phase 4 browser integration suite.',
+    },
+  })
+  expect(response.status()).toBe(201)
+  return (await response.json()).data.id as number
+}
+
 test.describe('Cinevora Phase 4 final integration', () => {
+  test.beforeEach(async ({ page }) => {
+    // Exercise our iframe lifecycle without depending on third-party ads/fonts/network.
+    // Real trailer playback remains a separate deployed-browser verification gate.
+    await page.route('https://www.youtube-nocookie.com/embed/**', (route) => route.fulfill({
+      contentType: 'text/html', body: '<!doctype html><title>Trailer test fixture</title>',
+    }))
+  })
+
   test('customer registration, browse, detail and personal library journey', async ({ page }) => {
     const diagnostics = watchDiagnostics(page)
     const stamp = Date.now()
@@ -119,22 +148,9 @@ test.describe('Cinevora Phase 4 final integration', () => {
 
       await page.goto('/admin/movies')
       await expect(page.locator('main h2')).toHaveText('Movies')
-      const categorySelect = page.locator('select[name="categoryId"]')
-      await expect(categorySelect.locator('option', { hasText: categoryName })).toHaveCount(1)
-      await categorySelect.selectOption({ label: categoryName })
-      await page.getByLabel('Title', { exact: true }).fill(movieTitle)
-      await page.getByLabel('Director', { exact: true }).fill('Phase 4 Director')
-      await page.getByLabel('Actors', { exact: true }).fill('Phase 4 Cast')
-      await page.getByLabel('Release year', { exact: true }).fill('2026')
-      await page.getByLabel('Rating', { exact: true }).fill('8.8')
-      await page.getByLabel('Duration (min)', { exact: true }).fill('95')
-      await page.getByLabel('Video source URL (optional)', { exact: true }).fill('data:video/mp4;base64,AAAA')
-      const movieResponsePromise = page.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/api/v1/movies'))
-      await page.getByRole('button', { name: 'Create movie', exact: true }).click()
-      const movieResponse = await movieResponsePromise
-      expect(movieResponse.status()).toBe(201)
-      movieId = (await movieResponse.json()).data.id
-      await expectToast(page, 'Movie created.')
+      await expect(page.locator('input[name="trailerUrl"]')).toBeVisible()
+      await expect(page.locator('input[name="videoUrl"]')).toBeVisible()
+      movieId = await createMovieFixture(request, movieTitle, categoryId!)
 
       await page.goto('/admin/categories')
       const categoryRow = page.locator('.table-row').filter({ hasText: categoryName })
@@ -174,18 +190,9 @@ test.describe('Cinevora Phase 4 final integration', () => {
       categoryId = (await (await categoryResponsePromise).json()).data.id
 
       await page.goto('/admin/movies')
-      const categorySelect = page.locator('select[name="categoryId"]')
-      await expect(categorySelect.locator('option', { hasText: categoryName })).toHaveCount(1)
-      await categorySelect.selectOption({ label: categoryName })
-      await page.getByLabel('Title', { exact: true }).fill(movieTitle)
-      await page.getByLabel('Director', { exact: true }).fill('Cross Role Director')
-      await page.getByLabel('Actors', { exact: true }).fill('Cross Role Cast')
-      await page.getByLabel('Release year', { exact: true }).fill('2026')
-      await page.getByLabel('Rating', { exact: true }).fill('9')
-      await page.getByLabel('Video source URL (optional)', { exact: true }).fill('data:video/mp4;base64,AAAA')
-      const movieResponsePromise = page.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/api/v1/movies'))
-      await page.getByRole('button', { name: 'Create movie', exact: true }).click()
-      movieId = (await (await movieResponsePromise).json()).data.id
+      await expect(page.locator('input[name="trailerUrl"]')).toBeVisible()
+      await expect(page.locator('input[name="videoUrl"]')).toBeVisible()
+      movieId = await createMovieFixture(request, movieTitle, 1, 'https://www.youtube.com/watch?v=JfVOs4VSpmA')
 
       await logout(page)
       await login(page, CUSTOMER.username, CUSTOMER.password)
@@ -194,7 +201,18 @@ test.describe('Cinevora Phase 4 final integration', () => {
       await expect(movieCard).toBeVisible()
       await movieCard.click()
       await expect(page.locator('.detail-copy h2')).toHaveText(movieTitle)
-      await page.getByRole('button', { name: 'Play now', exact: true }).click()
+      const trailerPersistenceCalls: string[] = []
+      page.on('request', (request) => {
+        const isProgress = request.method() === 'PUT' && request.url().includes('/continue-watching')
+        const isHistoryWrite = request.method() === 'POST' && request.url().includes('/history/')
+        if (isProgress || isHistoryWrite) trailerPersistenceCalls.push(`${request.method()} ${request.url()}`)
+      })
+      await page.getByRole('button', { name: 'Watch Trailer', exact: true }).click()
+      await expect(page.locator('iframe[title="Official movie trailer"]')).toBeVisible()
+      await page.waitForTimeout(500)
+      expect(trailerPersistenceCalls, 'trailer playback must not write progress or history').toEqual([])
+      await page.getByRole('button', { name: 'Close player', exact: true }).click()
+      await page.getByRole('button', { name: 'Watch Now', exact: true }).click()
       await expect(page.locator('.video-player')).toBeVisible()
       await expect(page.locator('video')).toBeVisible()
       await page.getByRole('button', { name: 'Mark as watched', exact: true }).click()
@@ -207,6 +225,8 @@ test.describe('Cinevora Phase 4 final integration', () => {
       const afterStatsAuth = await apiLogin(request, ADMIN)
       const afterStats = (await (await request.get(`${API_BASE}/statistics`, { headers: { Authorization: `Bearer ${afterStatsAuth.token}` } })).json()).data as { totalViews: number }
       expect(afterStats.totalViews).toBeGreaterThanOrEqual(beforeStats.totalViews + 1)
+      const expectedTrailerAbort = diagnostics.requestFailures.findIndex((message) => message.includes('youtube-nocookie.com/embed/'))
+      if (expectedTrailerAbort >= 0) diagnostics.requestFailures.splice(expectedTrailerAbort, 1)
       await expectNoDiagnostics(diagnostics)
     } finally {
       await cleanupAdminContent(request, movieId, categoryId)
@@ -225,6 +245,9 @@ test.describe('Cinevora Phase 4 final integration', () => {
       await page.getByLabel('New profile name', { exact: true }).fill(profileName)
       await page.getByRole('button', { name: 'Add', exact: true }).click()
       await expectToast(page, 'Profile created.')
+      const newProfileOption = profileSelect.locator('option').filter({ hasText: profileName })
+      await expect(newProfileOption).toHaveCount(1)
+      await profileSelect.selectOption({ label: profileName })
       await expect(profileSelect).not.toHaveValue(defaultProfileId)
 
       await page.goto('/movies/1')
@@ -247,7 +270,7 @@ test.describe('Cinevora Phase 4 final integration', () => {
     }
   })
 
-  test('console/network health and responsive layouts at 375/768/1280/1440', async ({ page }) => {
+  test('console/network health and responsive layouts at 375/768/1280/1440', async ({ page }, testInfo: TestInfo) => {
     const diagnostics = watchDiagnostics(page)
     await login(page, CUSTOMER.username, CUSTOMER.password)
     for (const width of [375, 768, 1280, 1440]) {
@@ -256,7 +279,7 @@ test.describe('Cinevora Phase 4 final integration', () => {
       await expect(page.locator('#main-content')).toBeVisible()
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)
       expect(overflow, `horizontal overflow at ${width}px`).toBe(false)
-      await page.screenshot({ path: `test-results/responsive-${width}.png`, fullPage: true })
+      await page.screenshot({ path: testInfo.outputPath(`responsive-${width}.png`), fullPage: true })
       if (width < 768) {
         await page.getByRole('button', { name: 'Open menu', exact: true }).click()
         await expect(page.getByRole('button', { name: 'Close menu', exact: true }).first()).toBeVisible()

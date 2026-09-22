@@ -134,6 +134,7 @@ public final class WikimediaPosterImporterTest {
         check(results.get(0).applied(), "apply mode should mark the update as applied");
         check(cinevora.updateCount == 1, "apply mode should issue one update request");
         check("https://cdn.example/video.mp4".equals(payload.get("videoUrl")), "videoUrl must be preserved");
+        check("https://cdn.example/trailer.mp4".equals(payload.get("trailerUrl")), "trailerUrl must be preserved");
         check(movie.categoryId().equals(payload.get("categoryId")), "categoryId must be preserved");
         check("https://upload.wikimedia.org/dune.jpg".equals(payload.get("thumbnailUrl")),
                 "only thumbnailUrl should receive the new poster URL");
@@ -181,7 +182,7 @@ public final class WikimediaPosterImporterTest {
 
     private static WikimediaPosterImporter.Movie movie(String title, int year, String thumbnailUrl) {
         return new WikimediaPosterImporter.Movie(7L, 2L, title, "Director", "Actor", year,
-                new BigDecimal("8.2"), 155, "https://cdn.example/video.mp4", thumbnailUrl,
+                new BigDecimal("8.2"), 155, "https://cdn.example/video.mp4", "https://cdn.example/trailer.mp4", thumbnailUrl,
                 "Description", true);
     }
 

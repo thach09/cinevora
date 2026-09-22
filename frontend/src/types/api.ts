@@ -65,6 +65,7 @@ export interface Movie {
   favouritesCount: number
   durationMinutes: number | null
   videoUrl: string | null
+  trailerUrl: string | null
   thumbnailUrl: string | null
   description: string | null
   active: boolean

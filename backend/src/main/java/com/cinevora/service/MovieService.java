@@ -65,7 +65,9 @@ public class MovieService {
         Category category = categoryService.get(r.categoryId());
         if (!category.isActive()) throw new BusinessException("Không thể gắn phim vào thể loại đã bị vô hiệu hóa");
         m.setCategory(category); m.setTitle(r.title().trim()); m.setDirector(r.director().trim()); m.setActors(r.actors().trim()); m.setReleaseYear(r.releaseYear());
-        m.setRating(r.rating() == null ? BigDecimal.ZERO : r.rating()); m.setDurationMinutes(r.durationMinutes()); m.setVideoUrl(clean(r.videoUrl())); m.setThumbnailUrl(clean(r.thumbnailUrl())); m.setDescription(clean(r.description()));
+        m.setRating(r.rating() == null ? BigDecimal.ZERO : r.rating()); m.setDurationMinutes(r.durationMinutes());
+        m.setVideoUrl(clean(r.videoUrl())); m.setTrailerUrl(clean(r.trailerUrl()));
+        m.setThumbnailUrl(clean(r.thumbnailUrl())); m.setDescription(clean(r.description()));
     }
     private String clean(String value) { return value == null || value.isBlank() ? null : value.trim(); }
 }

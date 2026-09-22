@@ -5,7 +5,7 @@ import { discoveryApi, getApiError, movieApi, userDataApi } from '../lib/api'
 import { useAuthStore } from '../store/authStore'
 import { Button, QueryError, Spinner } from '../components/ui'
 import { PosterArtwork } from '../components/MovieCard'
-import { VideoPlayer } from '../components/VideoPlayer'
+import { VideoPlayer, type PlaybackMode } from '../components/VideoPlayer'
 import { useToast } from '../components/ToastProvider'
 import { formatNumber } from '../lib/format'
 import { Seo } from '../components/Seo'
@@ -17,7 +17,7 @@ export function MovieDetailPage() {
   const { push } = useToast()
   const user = useAuthStore((state) => state.user)
   const activeProfileId = useAuthStore((state) => state.activeProfileId)
-  const [showPlayer, setShowPlayer] = useState(false)
+  const [playbackMode, setPlaybackMode] = useState<PlaybackMode | null>(null)
   const movie = useQuery({ queryKey: ['movie', movieId], queryFn: () => movieApi.get(movieId), enabled: Number.isFinite(movieId) })
   const watchlist = useQuery({ queryKey: ['watchlist', activeProfileId], queryFn: userDataApi.watchlist, enabled: Boolean(user && activeProfileId) })
   const favourites = useQuery({ queryKey: ['favourites', activeProfileId], queryFn: userDataApi.favourites, enabled: Boolean(user && activeProfileId) })
@@ -52,9 +52,14 @@ export function MovieDetailPage() {
   const inFavourites = favourites.data?.some((entry) => entry.movieId === movieId)
   const preference = preferences.data?.find((entry) => entry.movieId === movieId)?.signal
   const saved = continueQuery.data?.find((entry) => entry.movieId === movieId)
-  const openPlayer = () => {
-    if (!item.videoUrl) { push('This title does not have a video source yet.', 'info'); return }
-    setShowPlayer(true)
+  const activeSource = playbackMode === 'WATCH' ? item.videoUrl : item.trailerUrl
+  const openPlayer = (mode: PlaybackMode) => {
+    const source = mode === 'WATCH' ? item.videoUrl : item.trailerUrl
+    if (!source) {
+      push(mode === 'WATCH' ? 'This title does not have a Watch Now source yet.' : 'This title does not have a trailer yet.', 'info')
+      return
+    }
+    setPlaybackMode(mode)
   }
 
   return <div className="space-y-8">
@@ -67,13 +72,13 @@ export function MovieDetailPage() {
         <h2 className="mt-4 text-4xl font-semibold tracking-tight text-white md:text-6xl">{item.title}</h2>
         <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{item.description || 'A story waiting to be discovered.'}</p>
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400"><span>★ <b className="text-white">{item.rating.toFixed(1)}</b> rating</span><span>{formatNumber(item.views)} views</span><span>{formatNumber(item.favouritesCount)} favourites</span></div>
-        <div className="mt-8 flex flex-wrap gap-3"><Button onClick={openPlayer}>{item.videoUrl ? 'Play now' : 'No video source'}</Button><Button variant="secondary" onClick={() => user && action.mutate('watchlist')}>{inWatchlist ? 'In watchlist' : '+ Add to watchlist'}</Button><Button variant="ghost" onClick={() => user && action.mutate('favourites')}>{inFavourites ? 'Favourite' : 'Favourite'}</Button><Button variant={preference === 'LIKE' ? 'primary' : 'ghost'} onClick={() => user && preferenceAction.mutate('LIKE')} aria-pressed={preference === 'LIKE'}>Like</Button><Button variant={preference === 'DISLIKE' ? 'danger' : 'ghost'} onClick={() => user && preferenceAction.mutate('DISLIKE')} aria-pressed={preference === 'DISLIKE'}>Dislike</Button><Button variant="ghost" onClick={() => user ? action.mutate('history') : push('Sign in to track your viewing.', 'info')}>Mark as watched</Button></div>
+        <div className="mt-8 flex flex-wrap gap-3"><Button onClick={() => openPlayer('WATCH')} disabled={!item.videoUrl}>{saved ? 'Resume' : 'Watch Now'}</Button><Button variant="secondary" onClick={() => openPlayer('TRAILER')} disabled={!item.trailerUrl}>Watch Trailer</Button><Button variant="secondary" onClick={() => user && action.mutate('watchlist')}>{inWatchlist ? 'In watchlist' : '+ Add to watchlist'}</Button><Button variant="ghost" onClick={() => user && action.mutate('favourites')}>{inFavourites ? 'Favourite' : 'Favourite'}</Button><Button variant={preference === 'LIKE' ? 'primary' : 'ghost'} onClick={() => user && preferenceAction.mutate('LIKE')} aria-pressed={preference === 'LIKE'}>Like</Button><Button variant={preference === 'DISLIKE' ? 'danger' : 'ghost'} onClick={() => user && preferenceAction.mutate('DISLIKE')} aria-pressed={preference === 'DISLIKE'}>Dislike</Button><Button variant="ghost" onClick={() => user ? action.mutate('history') : push('Sign in to track your viewing.', 'info')}>Mark as watched</Button></div>
       </div>
     </section>
-    {showPlayer && item.videoUrl && <section className="space-y-3"><div className="flex items-center justify-between"><div><p className="eyebrow">Now playing</p><h3 className="text-xl font-semibold text-white">{item.title}</h3></div><Button variant="ghost" onClick={() => { setShowPlayer(false); client.invalidateQueries({ queryKey: ['continue-watching'] }) }}>Close player</Button></div><VideoPlayer movieId={movieId} src={item.videoUrl} initialPositionSeconds={saved?.positionSeconds || 0} /></section>}
+    {playbackMode && activeSource && <section className="space-y-3"><div className="flex items-center justify-between"><div><p className="eyebrow">{playbackMode === 'WATCH' ? 'Watch Now' : 'Trailer'}</p><h3 className="text-xl font-semibold text-white">{item.title}</h3></div><Button variant="ghost" onClick={() => { const wasWatching = playbackMode === 'WATCH'; setPlaybackMode(null); if (wasWatching) client.invalidateQueries({ queryKey: ['continue-watching'] }) }}>Close player</Button></div><VideoPlayer movieId={movieId} mode={playbackMode} src={activeSource} initialPositionSeconds={playbackMode === 'WATCH' ? (saved?.positionSeconds || 0) : 0} /></section>}
     <section className="grid gap-5 md:grid-cols-3">
       <div className="surface p-6 md:col-span-2"><p className="eyebrow">The people behind it</p><div className="mt-4 grid gap-5 sm:grid-cols-2"><div><p className="text-xs uppercase tracking-widest text-slate-500">Director</p><p className="mt-1 font-medium text-white">{item.director}</p></div><div><p className="text-xs uppercase tracking-widest text-slate-500">Cast</p><p className="mt-1 leading-6 text-slate-300">{item.actors}</p></div></div></div>
-      <div className="surface p-6"><p className="eyebrow">Continue watching</p><p className="mt-2 text-sm text-slate-400">Playback saves every few seconds and when you pause, seek, switch tab, or leave.</p>{saved && <p className="mt-5 text-sm text-pink-200">Resume at {Math.floor(saved.positionSeconds / 60)} min · {saved.percent}%</p>}<Button className="mt-4 w-full" variant="secondary" onClick={openPlayer}>{item.videoUrl ? (saved ? 'Resume playback' : 'Open player') : 'Awaiting video source'}</Button></div>
+      <div className="surface p-6"><p className="eyebrow">Continue watching</p><p className="mt-2 text-sm text-slate-400">Watch Now saves every few seconds and when you pause, seek, switch tab, or leave. Trailers never enter this list.</p>{saved && <p className="mt-5 text-sm text-pink-200">Resume at {Math.floor(saved.positionSeconds / 60)} min · {saved.percent}%</p>}<Button className="mt-4 w-full" variant="secondary" onClick={() => openPlayer('WATCH')} disabled={!item.videoUrl}>{item.videoUrl ? (saved ? 'Resume playback' : 'Open player') : 'Awaiting Watch Now source'}</Button></div>
     </section>
   </div>
 }
