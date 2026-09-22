@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-22
 **Commit tested at start:** `6d6db387e5851cb6916749fe9385745e4ec76127`
-**Cloud account:** not connected; no cloud deployment or push performed
+**Verification commit:** `7549adefc07db03d5d332713fe327c074e8b6d98` (`origin/main`)
+**Cloud account:** not connected; no public cloud deployment performed; verified commits are pushed to `origin/main`
 
 ## Scope and working tree
 
@@ -60,6 +61,10 @@ Performance 99; Accessibility 100; Best Practices 100; SEO 100
 actionlint
 exit 0
 
+GitHub Actions on verification commit `7549ade`
+Backend CI: Success; Frontend CI: Success; Integration CI: Success
+Deploy: Skipped by the deliberate `DEPLOY_ENABLED` gate
+
 gitleaks git: 140 commits scanned; no leaks found; exit 0
 gitleaks working tree: no leaks found; exit 0
 
@@ -86,7 +91,7 @@ The selected evaluation topology is Render Free PostgreSQL + Render Docker Web S
 | Backend Docker | PASS | `docker-release-build.log`; image built and backend healthy |
 | Frontend Docker | PASS | same Compose build; frontend healthy |
 | Full-stack Compose | PASS | three services healthy; isolated CI env |
-| CI workflows | PASS (static) | actionlint exit 0; not executed on GitHub because no push was authorized |
+| CI workflows | PASS | GitHub Backend CI, Frontend CI and Integration CI succeeded on `7549ade`; Deploy was skipped by `DEPLOY_ENABLED` |
 | Clean Flyway V1–V9 | PASS | isolated PostgreSQL, version v9 |
 | Production profile guard | PASS | 20 backend tests including prod runtime test |
 | Managed PostgreSQL cloud | NOT DEPLOYED | no provider account/credentials |
@@ -107,4 +112,4 @@ The selected evaluation topology is Render Free PostgreSQL + Render Docker Web S
 
 **NOT RELEASE READY for public Internet deployment.** Provider-independent Phase 5 work is complete and locally verified. Real deployment is intentionally gated until the owner supplies cloud accounts/secrets and explicitly enables the production workflow variable. After that, rerun `verify-public.mjs`, deployed Playwright E2E, media persistence after redeploy, cold/warm performance and public CORS checks before calling the release ready.
 
-No commit or push was performed. Recommended commit grouping: (1) backend production guard and media adapter, (2) Docker/Compose and frontend deployment config, (3) CI/deploy workflows, (4) ADR/runbook/report, (5) preserve the already pending Phase 4 V9 playback changes in their existing feature commit.
+The verified changes were split into seven focused commits and pushed to `origin/main` at `7549ade`. No public cloud deployment was performed because provider accounts and secrets are not connected.

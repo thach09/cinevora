@@ -2,6 +2,10 @@
 
 > Cinevora đã tiến hóa từ ứng dụng CLI Java thuần thành hệ thống portfolio full-stack: Spring Boot 3.4 / Java 21, PostgreSQL 16 + Flyway, React 18 + Vite + TypeScript, JWT, Docker Compose và GitHub Actions.
 
+[![Backend CI](https://github.com/thach09/cinevora/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/thach09/cinevora/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/frontend-ci.yml)
+[![Integration CI](https://github.com/thach09/cinevora/actions/workflows/integration-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/integration-ci.yml)
+
 ## Trạng thái hiện tại
 
 Backend và frontend đã được kiểm thử local bằng Docker Compose; database sạch chạy Flyway V1–V9; browser E2E đạt 7/7; poster upload có validation và adapter S3-compatible; production cloud chưa được bật vì chưa có tài khoản/credentials. Xem [báo cáo Phase 5](docs/verification/PHASE_5_DEPLOYMENT_MASTER_REPORT.md), [ADR hosting](docs/adr/ADR_PHASE_5_HOSTING.md) và [deployment runbook](docs/deployment/DEPLOYMENT_RUNBOOK.md).
