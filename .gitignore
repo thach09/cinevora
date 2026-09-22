@@ -31,6 +31,11 @@ CONTEXT.md
 # .env chua mat khau DB - chi commit .env.example
 .env
 .env.local
+.env.*
+!.env.example
+.tmp/
+**/uploads/
+.vercel/
 
 # Output cua cac cong cu JDK trong tools/ (class da build, jar verify)
 tools/build/

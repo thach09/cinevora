@@ -1,4 +1,24 @@
-# 🎬 Movie Streaming Management System
+# 🎬 CINEVORA — Full-stack movie streaming platform
+
+> Cinevora đã tiến hóa từ ứng dụng CLI Java thuần thành hệ thống portfolio full-stack: Spring Boot 3.4 / Java 21, PostgreSQL 16 + Flyway, React 18 + Vite + TypeScript, JWT, Docker Compose và GitHub Actions.
+
+## Trạng thái hiện tại
+
+Backend và frontend đã được kiểm thử local bằng Docker Compose; database sạch chạy Flyway V1–V9; browser E2E đạt 7/7; poster upload có validation và adapter S3-compatible; production cloud chưa được bật vì chưa có tài khoản/credentials. Xem [báo cáo Phase 5](docs/verification/PHASE_5_DEPLOYMENT_MASTER_REPORT.md), [ADR hosting](docs/adr/ADR_PHASE_5_HOSTING.md) và [deployment runbook](docs/deployment/DEPLOYMENT_RUNBOOK.md).
+
+## Chạy full-stack local
+
+```powershell
+docker compose up --build
+```
+
+Frontend: `http://localhost:8088` · API: `http://localhost:8080` · health: `http://localhost:8080/actuator/health`
+
+Copy `.env.example` to `.env` for local values. Production secrets are supplied through the cloud provider and must never be committed. `VITE_API_URL` is build-time configuration; changing it requires rebuilding the frontend image.
+
+## Repository history
+
+`legacy-cli/` is the original OOP/File I/O application kept for reference. `backend/` and `frontend/` are the current web application. The legacy README content below remains as historical context for the original CLI project.
 
 > Ứng dụng quản lý xem phim trực tuyến mô phỏng Netflix — xây dựng bằng **Pure Java** (Java Standard SDK) với kiến trúc **MVC**, lưu trữ **File I/O**, thể hiện đầy đủ các nguyên lý **Lập trình Hướng đối tượng (OOP)**.
 
