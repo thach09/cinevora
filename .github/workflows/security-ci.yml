@@ -1,0 +1,192 @@
+name: Security CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@595b5aeba73380359d98a5e087f648dbb0edce1b # v4.7.3
+
+  secrets:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@b1722c1245f90604c2c348f9d1624af97ea8fc6e # v3.29.0
+        with:
+          languages: java,javascript-typescript
+          build-mode: manual
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - run: mvn -B -ntp -DskipTests package
+        working-directory: backend
+      - uses: github/codeql-action/analyze@b1722c1245f90604c2c348f9d1624af97ea8fc6e # v3.29.0
+        with:
+          category: /language:java-javascript
+
+  sca:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci && npm audit --audit-level=high
+        working-directory: frontend
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - run: mvn -B -ntp test
+        working-directory: backend
+
+  security-integration:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.21.0'
+      - name: Check first-boot provider configuration
+        run: node tools/deployment/check-bootstrap-config.mjs
+      - name: Create disposable security databases
+        run: |
+          docker exec "${{ job.services.postgres.id }}" psql -U postgres -c 'CREATE DATABASE cinevora_test_security_ci'
+          docker exec "${{ job.services.postgres.id }}" psql -U postgres -c 'CREATE DATABASE cinevora_test_production_ci'
+          docker exec "${{ job.services.postgres.id }}" psql -U postgres -c 'CREATE DATABASE cinevora_test_data_ci'
+      - name: Run refresh, CSRF and input integration (3 required, zero skips)
+        working-directory: backend
+        env:
+          CINEVORA_SECURITY_DB: 'true'
+          CINEVORA_SECURITY_DATABASE_URL: jdbc:postgresql://127.0.0.1:5432/cinevora_test_security_ci
+          CINEVORA_TEST_DATABASE_USER: postgres
+          CINEVORA_TEST_DATABASE_PASSWORD: isolated-ci-only
+        run: |
+          mvn -B -ntp -Dtest=SecurityIntegrationTest test
+          node ../tools/security/assert-surefire.mjs 3 SecurityIntegrationTest
+      - name: Run production bootstrap integration (4 required, zero skips)
+        working-directory: backend
+        env:
+          CINEVORA_DB_TESTS: 'true'
+          CINEVORA_TEST_DATABASE_URL: jdbc:postgresql://127.0.0.1:5432/cinevora_test_production_ci
+          CINEVORA_TEST_DATABASE_USER: postgres
+          CINEVORA_TEST_DATABASE_PASSWORD: isolated-ci-only
+        run: |
+          mvn -B -ntp -Dtest=ProductionRuntimeTest test
+          node ../tools/security/assert-surefire.mjs 4 ProductionRuntimeTest
+      - name: Run PostgreSQL concurrency invariants (4 required, zero skips)
+        working-directory: backend
+        env:
+          CINEVORA_DATA_DB: 'true'
+          CINEVORA_DATA_DATABASE_URL: jdbc:postgresql://127.0.0.1:5432/cinevora_test_data_ci
+          CINEVORA_TEST_DATABASE_USER: postgres
+          CINEVORA_TEST_DATABASE_PASSWORD: isolated-ci-only
+        run: |
+          mvn -B -ntp -Dtest=DataIntegrityConcurrencyTest test
+          node ../tools/security/assert-surefire.mjs 4 DataIntegrityConcurrencyTest
+
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - run: docker build --tag cinevora-backend:security ./backend && docker build --tag cinevora-frontend:security ./frontend
+      - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          image-ref: cinevora-backend:security
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+      - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          image-ref: cinevora-frontend:security
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+
+  dynamic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - run: docker compose --env-file compose.ci.env up --build -d --wait --wait-timeout 180
+      - name: Assert client errors stay controlled at the servlet boundary
+        run: node tools/security/fqa-error-mapping.mjs
+      - run: >-
+          docker run --rm --network host -v "${{ github.workspace }}:/zap/wrk/:rw"
+          ghcr.io/zaproxy/zaproxy@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef
+          zap-baseline.py -t http://127.0.0.1:18088 -m 3 -I -r zap-baseline.html
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: zap-baseline-report
+          path: zap-baseline.html
+          retention-days: 7
+      - run: docker compose --env-file compose.ci.env down
+        if: always()
