@@ -1,11 +1,17 @@
-# 🎬 CINEVORA — Enterprise Full-Stack Movie Streaming & Discovery Platform
+# 🎬 CINEVORA — Enterprise Movie Streaming & Discovery Platform
 
-> **Cinevora** là nền tảng quản lý và phát trực tuyến phim chuẩn doanh nghiệp (Enterprise-Grade Movie Streaming & Discovery Platform). Dự án đánh dấu bước chuyển đổi kiến trúc toàn diện từ ứng dụng CLI Java thuần (với thuật toán tự cài đặt) sang hệ thống phân tán Full-Stack hiện đại: **Spring Boot 3.5.16 / Java 21 LTS**, **PostgreSQL 16 + Flyway V10**, **React 18 + Vite + TypeScript**, kiến trúc bảo mật **Dual-Token HttpOnly**, **Docker Compose** và quy trình tự động hóa **GitHub Actions CI/CD**.
+> **Cinevora** là nền tảng phát trực tuyến và khám phá điện ảnh toàn diện (Full-Stack Movie Streaming & Discovery Platform), được thiết kế và xây dựng theo chuẩn mực kiến trúc doanh nghiệp phân tán. Hệ thống đánh dấu bước chuyển đổi kỹ thuật ấn tượng từ một ứng dụng **Java CLI thuần OOP** (sử dụng thuật toán tự cài đặt) sang hệ thống **Web Cloud-Native**: **Spring Boot 3.5.16 / Java 21 LTS**, **PostgreSQL 16 + Flyway V10**, **React 18 + Vite + TypeScript**, kiến trúc bảo mật **Dual-Token HttpOnly**, đóng gói **Docker Compose** và tự động hóa toàn trình qua **GitHub Actions CI/CD**.
 
 ---
 
 <div align="center">
 
+### 🌐 HỆ THỐNG ĐANG HOẠT ĐỘNG TRỰC TIẾP (LIVE PRODUCTION)
+### 🔗 **Website**: [https://cinevora.store](https://cinevora.store) &nbsp;|&nbsp; 🔌 **API**: [https://api.cinevora.store/api/v1](https://api.cinevora.store/api/v1) &nbsp;|&nbsp; ❤️ **Health**: [https://api.cinevora.store/actuator/health](https://api.cinevora.store/actuator/health)
+
+<br/>
+
+[![Production Status](https://img.shields.io/badge/Production-Live%20at%20cinevora.store-00C853?style=for-the-badge&logo=vercel&logoColor=white)](https://cinevora.store)
 [![Backend CI](https://github.com/thach09/cinevora/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/backend-ci.yml)
 [![Frontend CI](https://github.com/thach09/cinevora/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/frontend-ci.yml)
 [![Integration CI](https://github.com/thach09/cinevora/actions/workflows/integration-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/integration-ci.yml)
@@ -25,230 +31,317 @@
 
 ---
 
-## 📌 Bảng điều khiển bàn giao & Kiểm định (Quality & Release Status)
+## 📌 Bảng điều khiển kiểm định & Trạng thái phát hành (Quality & Audit Dashboard)
 
-Dự án đã trải qua đợt thẩm định độc lập (**Independent QA & Security Audit**) và khắc phục toàn diện (**Final Remediation**). Toàn bộ 6 phát hiện bảo mật/đồng thời (`FQA-001` đến `FQA-006`) đã được verify thành công ở mức mã nguồn và môi trường kiểm thử runtime local.
+Dự án đã hoàn tất đợt thẩm định độc lập (**Independent QA & Security Audit**) và quá trình khắc phục triệt để (**Final Remediation**). Hệ thống hiện đã được cấu hình và triển khai thành công trên môi trường Production thực tế với tên miền riêng cùng kiến trúc **Same-Site HTTPS** chuẩn mực.
 
-| Hạng mục kiểm định | Trạng thái kỹ thuật | Minh chứng / Bằng chứng thực thi |
+| Hạng mục kiểm định | Trạng thái kỹ thuật | Minh chứng / Bằng chứng thực tế |
 |:---|:---:|:---|
-| **Local Release Candidate** | **VERIFIED (PASS)** | Sẵn sàng bàn giao, full-stack docker compose chạy trơn tru |
-| **Database Migrations** | **PASS (V1–V10)** | 10 script Flyway thực thi sạch sẽ trên PostgreSQL 16 Alpine |
-| **Backend Test Suite** | **PASS (36/36 normal + 11/11 gated)** | 100% test vượt qua không lỗi (Security, Concurrency, Runtime) |
-| **Frontend & E2E Testing** | **PASS (7/7 Core + 1/1 Topology)** | Playwright browser suite pass toàn bộ luồng Auth, CMS, Streaming |
-| **Security Auditing** | **HARDENED** | Trivy: 0 CVE, npm audit: 0 vuln, Gitleaks: 0 leak, ZAP baseline verified |
-| **Concurrency Guarantees** | **VERIFIED** | Pessimistic locking cho giới hạn 5 profile; JPQL Atomic counter updates |
-| **Public Production Deployment** | **READY TO CONFIGURE** | Yêu cầu domain HTTPS same-site theo đúng `DEPLOYMENT_RUNBOOK.md` |
+| **Trạng thái Triển khai** | **LIVE (PRODUCTION)** | Hoạt động chính thức tại [cinevora.store](https://cinevora.store) với HTTPS đầy đủ |
+| **Kiến trúc Tên miền** | **SAME-SITE HTTPS** | `cinevora.store` (Web) + `api.cinevora.store` (API) — bảo đảm tính toàn vẹn Cookie |
+| **Cơ sở dữ liệu (Flyway)** | **PASS (V1–V10)** | 10 script migration tuần tự thực thi sạch, không lỗi trên PostgreSQL 16 |
+| **Backend Test Suite** | **PASS (36 + 11 Gated)** | 100% test vượt qua (Unit, Concurrency, Security Integration trên DB thật) |
+| **Frontend E2E Suite** | **PASS (7/7 + 1/1 Gate)** | Playwright test tự động trên trình duyệt thật (Auth, Streaming, Admin CMS) |
+| **Kiểm toán An toàn thông tin** | **HARDENED** | Trivy 0 CVE, npm audit 0 lỗi, Gitleaks clean, OWASP ZAP baseline thông qua |
+| **Kiểm soát Đồng thời (Concurrency)** | **VERIFIED** | Khóa bi quan `PESSIMISTIC_WRITE` (giới hạn 5 profiles) & Atomic JPQL Counters |
+| **Xác thực Dual-Token** | **VERIFIED** | Memory-only Access Token + `HttpOnly; SameSite=Lax` Refresh Cookie xoay vòng |
 
 > [!NOTE]
-> Báo cáo chi tiết quá trình kiểm thử độc lập và remediation được lưu trữ tại [FINAL_REMEDIATION_REPORT.md](docs/verification/FINAL_REMEDIATION_REPORT.md) và [FINAL_INDEPENDENT_QA_SECURITY_AUDIT.md](docs/verification/FINAL_INDEPENDENT_QA_SECURITY_AUDIT.md).
+> Toàn bộ báo cáo kỹ thuật chuyên sâu được lưu trữ tại [FINAL_REMEDIATION_REPORT.md](docs/verification/FINAL_REMEDIATION_REPORT.md), [FINAL_INDEPENDENT_QA_SECURITY_AUDIT.md](docs/verification/FINAL_INDEPENDENT_QA_SECURITY_AUDIT.md) và [DEPLOYMENT_RUNBOOK.md](docs/deployment/DEPLOYMENT_RUNBOOK.md).
 
 ---
 
 ## 📖 Mục lục
 
-1. [Tổng quan dự án & Lịch sử tiến hóa](#-tổng-quan-dự-án--lịch-sử-tiến-hóa)
-2. [Kiến trúc hệ thống (System Architecture)](#-kiến-trúc-hệ-thống-system-architecture)
-3. [Ngăn xếp công nghệ (Technology Stack)](#-ngăn-xếp-công-nghệ-technology-stack)
-4. [Tính năng hệ thống (Feature Matrix)](#-tính-năng-hệ-thống-feature-matrix)
-5. [Thiết kế cơ sở dữ liệu & Migrations](#-thiết-kế-cơ-sở-dữ-liệu--migrations)
-6. [Tiêu chuẩn bảo mật & Cơ chế đồng thời](#-tiêu-chuẩn-bảo-mật--cơ-chế-đồng-thời)
-7. [Hướng dẫn cài đặt & Khởi chạy (Quick Start)](#-hướng-dẫn-cài-đặt--khởi-chạy-quick-start)
-8. [Tài liệu API & Chuẩn giao tiếp (API Specification)](#-tài-liệu-api--chuẩn-giao-tiếp-api-specification)
-9. [Cấu trúc thư mục dự án (Repository Tree)](#-cấu-trúc-thư-mục-dự-án-repository-tree)
-10. [Hướng dẫn triển khai Production (Production Runbook)](#-hướng-dẫn-triển-khai-production-production-runbook)
-11. [Thông tin tác giả & Bản quyền](#-thông-tin-tác-giả--bản-quyền)
+1. [Tổng quan dự án & Hành trình tiến hóa](#-tổng-quan-dự-án--hành-trình-tiến-hóa)
+2. [Góc nhìn Kiến trúc & Thiết kế hệ thống (Tech Lead & BE Perspective)](#-góc-nhìn-kiến-trúc--thiết-kế-hệ-thống-tech-lead--be-perspective)
+3. [Ngăn xếp công nghệ & Thư viện (Tech Stack Breakdown)](#-ngăn-xếp-công-nghệ--thư-viện-tech-stack-breakdown)
+4. [Ma trận tính năng toàn diện (Feature Matrix)](#-ma-trận-tính-năng-toàn-diện-feature-matrix)
+5. [Thiết kế Cơ sở dữ liệu & Vòng đời Migrations](#-thiết-kế-cơ-sở-dữ-liệu--vòng-đời-migrations)
+6. [Tiêu chuẩn An toàn thông tin & Xử lý đồng thời (Security & Concurrency)](#-tiêu-chuẩn-an-toàn-thông-tin--xử-lý-đồng-thời-security--concurrency)
+7. [Đặc tả API & Chuẩn giao tiếp (API Specification)](#-đặc-tả-api--chuẩn-giao-tiếp-api-specification)
+8. [Hướng dẫn cài đặt & Khởi chạy cục bộ (Local Quick Start)](#-hướng-dẫn-cài-đặt--khởi-chạy-cục-bộ-local-quick-start)
+9. [Kiến trúc Triển khai Thực tế (Production Deployment Topology)](#-kiến-trúc-triển-khai-thực-tế-production-deployment-topology)
+10. [Cấu trúc mã nguồn (Repository Structure)](#-cấu-trúc-mã-nguồn-repository-structure)
+11. [Di sản Thuật toán & Nền tảng OOP (Algorithmic Heritage)](#-di-sản-thuật-toán--nền-tảng-oop-algorithmic-heritage)
+12. [Tác giả & Bản quyền](#-tác-giả--bản-quyền)
 
 ---
 
-## 🚀 Tổng quan dự án & Lịch sử tiến hóa
+## 🚀 Tổng quan dự án & Hành trình tiến hóa
 
-### Từ CLI thuần OOP đến Nền tảng Streaming Hiện đại
-Cinevora khởi đầu là một ứng dụng dòng lệnh (CLI Console) viết bằng **Java thuần (Standard SDK)** không dùng bất kỳ framework nào. Ứng dụng gốc cài đặt thủ công các thuật toán kinh điển (**Bubble Sort**, **Linear Search**, **Custom Stack** cho tính năng Undo/Redo Watchlist) và lưu trữ dữ liệu dạng File I/O phân tách bằng ký tự `|`.
+### 1. Bối cảnh & Mục tiêu
+Cinevora được xây dựng với mục tiêu tái hiện trọn vẹn mô hình dịch vụ truyền hình trực tuyến (kiểu Netflix) từ góc độ kỹ thuật phần mềm chuẩn chỉ: từ tầng dữ liệu quan hệ, xử lý đồng thời, bảo mật phiên làm việc cho đến giao diện người dùng mượt mà, sẵn sàng chịu tải trong thực tế.
 
-Nhận diện được các giới hạn về mở rộng, toàn vẹn dữ liệu và an toàn thông tin (như việc lưu mật khẩu không an toàn ở bản demo cũ), toàn bộ hệ thống đã được **tái cấu trúc thành Web Application chuẩn doanh nghiệp**:
-- **Bảo toàn quy tắc nghiệp vụ**: Toàn bộ domain logic cốt lõi từ `legacy-cli/src/controller/` được kế thừa và đóng gói thành các `*Service` chuẩn mực trong Spring Boot, kết hợp Spring Data JPA.
-- **Hiện đại hóa dữ liệu**: Thay thế hoàn toàn file text bằng cơ sở dữ liệu quan hệ PostgreSQL 16 với 10 bản migration Flyway tuần tự và ID dạng `BIGINT GENERATED BY DEFAULT AS IDENTITY`.
-- **Nâng cấp bảo mật triệt để**: Toàn bộ mật khẩu được băm bằng BCrypt (cost 10, độ dài 60 ký tự); triển khai kiến trúc Dual-Token authentication với HttpOnly SameSite Cookie; bổ sung cơ chế khóa đồng thời chống race condition.
-- **Thư mục `legacy-cli/`**: Được lưu giữ nguyên vẹn trong repository như một bảo tàng kiến trúc và minh chứng cho năng lực làm chủ lập trình hướng đối tượng (OOP) từ nền tảng.
+### 2. Hành trình tiến hóa 3 giai đoạn (Architectural Evolution)
+- **Giai đoạn 1 — Nền tảng OOP & Thuật toán thuần (Legacy CLI)**:
+  Ứng dụng được viết hoàn toàn bằng **Java Core (Standard SDK)** không dùng bất kỳ framework nào. Kiến trúc MVC truyền thống, lưu trữ File I/O phân tách bằng dấu `|`. Tự cài đặt thủ công các cấu trúc dữ liệu và thuật toán: **Custom Stack** (Linked-Node generic) phục vụ Undo/Redo cho Watchlist, **Bubble Sort** đa hình, **Linear Search** không phụ thuộc Stream API.
+- **Giai đoạn 2 — Hiện đại hóa Web & Cơ sở dữ liệu quan hệ (Full-Stack Engineering)**:
+  Chuyển dịch toàn bộ logic nghiệp vụ bất biến sang Spring Boot Service (`*Service`), chuẩn hóa ID thành `BIGINT GENERATED BY DEFAULT AS IDENTITY`, thay thế File I/O bằng PostgreSQL 16 quản trị qua Flyway. Xây dựng giao diện React 18 SPA với TypeScript và TailwindCSS.
+- **Giai đoạn 3 — Thẩm định An ninh & Triển khai Đám mây (Production Hardening & Live Deployment)**:
+  Trải qua kiểm toán độc lập OWASP ASVS Level 2, vá triệt để 6 lỗ hổng phát hiện (khóa bi quan đa luồng, xử lý cookie SameSite, atomic counter), tích hợp lưu trữ đám mây tương thích S3 (Cloudflare R2), nạp toàn bộ 60 poster bản quyền Wikimedia và trailer YouTube chính thức. Triển khai thành công trên domain thương mại: **`https://cinevora.store`**.
+
+Thư mục `legacy-cli/` được bảo tồn nguyên vẹn làm minh chứng so sánh (benchmark) giữa lập trình giải thuật nền tảng và thiết kế hệ thống phân tán cấp cao.
 
 ---
 
-## 🏗 Kiến trúc hệ thống (System Architecture)
+## 🏗 Góc nhìn Kiến trúc & Thiết kế hệ thống (Tech Lead & BE Perspective)
 
-Hệ thống được thiết kế theo mô hình **Phân tầng hướng dịch vụ (Multi-Tier Layered Architecture)** với ranh giới trách nhiệm rõ ràng:
+Với vai trò Backend Engineer và Lead Developer, hệ thống được thiết kế dựa trên nguyên lý **High Cohesion, Loose Coupling**, phân định ranh giới trách nhiệm nghiêm ngặt giữa các tầng:
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                           CLIENT / PRESENTATION                          │
-│     React 18.3 (TypeScript) + Vite 6 + TailwindCSS + Zustand Store       │
-│     TanStack Query v5 (Data Fetching / Cache) · React Router 7.18        │
-└────────────────────────────────────┬─────────────────────────────────────┘
-                                     │ HTTPS / REST API (/api/v1)
-                                     │ Dual-Token (Bearer + HttpOnly Cookie)
-┌────────────────────────────────────▼─────────────────────────────────────┐
-│                          SECURITY & GATEWAY TIER                         │
-│     Spring Security 6 · Strict CORS (Env-driven) · CSRF Protection       │
-│     Rate Limiting Filter · Global Exception Handler (RFC 7807/Envelope) │
-├──────────────────────────────────────────────────────────────────────────┤
-│                          BUSINESS SERVICE LAYER                          │
-│     AuthService · MovieService · CategoryService · UserDataService       │
-│     ProfileService (Pessimistic Lock) · MediaStorageService (Local / S3) │
-│     Auto-Ranking Engine · RFC 4180 CSV Exporter · NotificationService    │
-├──────────────────────────────────────────────────────────────────────────┤
-│                           DATA PERSISTENCE TIER                          │
-│     Spring Data JPA · Hibernate ORM · Flyway Migration Engine (V1–V10)   │
-└──────────────────┬───────────────────────────────────────┬───────────────┘
-                   │                                       │
-┌──────────────────▼───────────────────┐ ┌─────────────────▼───────────────┐
-│           PRIMARY DATABASE           │ │         OBJECT STORAGE          │
-│       PostgreSQL 16 (Alpine)         │ │   AWS S3 / Cloudflare R2 / Disk │
-│   ACID Transactions · Indexes · FKs  │ │    Posters (WebP/JPEG/PNG)      │
-└──────────────────────────────────────┘ └─────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            CLIENT TIER (PRESENTATION)                       │
+│     React 18.3 SPA · TypeScript 5.6 · Vite 6 · TailwindCSS · Lucide Icons   │
+│     Zustand Store (Memory-Only JWT & State) · TanStack Query v5 (Caching)   │
+│     Deployed at: https://cinevora.store                                     │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ HTTPS (Same-Site Domain Contract)
+                                       │ Bearer Header (RAM) + HttpOnly Cookie
+┌──────────────────────────────────────▼──────────────────────────────────────┐
+│                           SECURITY & GATEWAY LAYER                          │
+│     Spring Security 6 · Strict CORS (cinevora.store) · CSRF Protection      │
+│     SensitiveActionRateLimiter · GlobalExceptionHandler (Unified Envelope)  │
+│     Deployed at: https://api.cinevora.store                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           APPLICATION / SERVICE LAYER                       │
+│     AuthService · MovieService · CategoryService · UserDataService          │
+│     ProfileService (Pessimistic Lock) · MediaTrackService                   │
+│     Auto-Ranking Engine · RFC 4180 CSV Exporter · NotificationService       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                          PERSISTENCE & STORAGE LAYER                        │
+│     Spring Data JPA · Hibernate 6 (Open-in-View: False)                     │
+│     Flyway Migration Engine (V1 -> V10) · Hikari Connection Pool            │
+└──────────────────┬──────────────────────────────────────────┬───────────────┘
+                   │ JDBC + SSL Mode                          │ AWS SDK v2
+┌──────────────────▼──────────────────────┐ ┌─────────────────▼───────────────┐
+│        MANAGED POSTGRESQL 16            │ │    S3-COMPATIBLE STORAGE        │
+│    ACID Invariants · Indexes · Locks    │ │    Cloudflare R2 / AWS S3       │
+│    Users, Movies, Categories, Profiles  │ │    Immutable Poster Media       │
+└─────────────────────────────────────────┘ └─────────────────────────────────┘
 ```
 
-### Các nguyên lý & Mẫu thiết kế chủ đạo (Core Design Patterns)
-1. **Dependency Injection & Inversion of Control**: Quản lý vòng đời linh hoạt qua Spring IoC Container, loại bỏ phụ thuộc vòng (circular dependency) thông qua tầng Service chuẩn mực.
-2. **DTO & Envelope Pattern**: Toàn bộ phản hồi API được chuẩn hóa qua `ApiResponse<T>` (cho cả kết quả thành công và lỗi) và `PageResponse<T>` cho phân trang, cô lập hoàn toàn Entity nội bộ khỏi tầng Web.
-3. **Atomic Concurrency Control**:
-   - Khóa bi quan (`PESSIMISTIC_WRITE`) trên bản ghi `users` khi thao tác tạo Profile, khống chế cứng số lượng tối đa 5 profile/tài khoản trong môi trường đa luồng.
-   - Thao tác đếm lượt xem (`views_count`) và lượt yêu thích (`favourites_count`) được thực thi trực tiếp bằng câu lệnh JPQL cập nhật nguyên tử (Atomic Update), có kiểm tra biên không âm ($\ge 0$).
-4. **Adapter Pattern cho Media Storage**: Tự động chuyển đổi giữa lưu trữ Local Disk (`uploads/media`) trong môi trường Dev/Docker sang S3-compatible Storage (AWS S3 hoặc Cloudflare R2) khi chạy Production.
+### 5 Trụ cột Kỹ thuật then chốt (Architectural Pillars)
+
+#### 1. Kiểm soát Đồng thời & Tính toàn vẹn Dữ liệu (Concurrency & Data Integrity)
+- **Khóa bi quan (Pessimistic Locking)**: Giới hạn nghiệp vụ quy định mỗi tài khoản có tối đa 5 Profile. Khi tạo Profile, hệ thống áp dụng `PESSIMISTIC_WRITE` lock trên chính bản ghi `users` sở hữu trong PostgreSQL. Điều này đảm bảo khi có 10 requests tạo profile được bắn tới đồng thời, hệ thống chỉ tạo đúng số lượng cho phép, hoàn toàn miễn nhiễm với Race Condition.
+- **Atomic Counter Invariant**: Việc tăng/giảm số lượt xem (`views_count`) và lượt yêu thích (`favourites_count`) được thực thi trực tiếp bằng câu lệnh JPQL cập nhật nguyên tử ở tầng database (`UPDATE Movie m SET m.viewsCount = m.viewsCount + 1 ...`), đi kèm guard chặn giá trị âm ($\ge 0$). Không dùng cơ chế read-modify-write dễ gây xung đột.
+- **Refresh Token Race Defense**: Token refresh được lưu trữ kèm trạng thái sử dụng. Khi 25 request gửi tới cùng lúc nhằm tái sử dụng cùng 1 refresh token, hệ thống đảm bảo duy nhất 1 request thành công cấp mới token, 24 request còn lại bị thu hồi và từ chối 401.
+
+#### 2. Chiến lược Xác thực Kép (Dual-Token Security Architecture)
+- **Access Token (Ngắn hạn - 15 phút)**: Chứa thông tin Claims (userId, role, username). **Chỉ lưu trong bộ nhớ RAM** (Zustand store), biến mất khi đóng tab, không bao giờ ghi xuống `localStorage` hay `sessionStorage`. Loại bỏ hoàn toàn nguy cơ rò rỉ qua tấn công XSS.
+- **Refresh Token (Dài hạn - 30 ngày)**: Được lưu dưới dạng HttpOnly Cookie với các cờ: `Secure; HttpOnly; SameSite=Lax; Path=/api/v1/auth`. Mã JavaScript phía Client tuyệt đối không thể đọc được.
+- **Yêu cầu Bắt buộc Same-Site Topology**: Để trình duyệt chấp nhận truyền cookie `SameSite=Lax` trong các request API, Frontend và Backend phải nằm trên cùng một miền cấp 2 (ví dụ: `cinevora.store` và `api.cinevora.store`). Hệ thống có script tự động chặn build nếu phát hiện deploy chéo domain không cùng gốc.
+
+#### 3. Kỹ thuật Phòng thủ Chiều sâu (Defensive Engineering)
+- **Validation 3 Lớp**: Jakarta Bean Validation (`@Valid`, `@NotBlank`, `@Size`, `@Min`, `@Max`) tại Controller $\rightarrow$ Ràng buộc logic tại tầng Service $\rightarrow$ Khóa ngoại và Check Constraints tại PostgreSQL.
+- **Kiểm định File Tải lên qua Magic Bytes**: Upload poster phim được thẩm định thông qua thư viện `TwelveMonkeys ImageIO` để phân tích header byte thực tế của tập tin (hỗ trợ JPEG, PNG, WebP), ngăn chặn triệt để kỹ thuật "giả mạo đuôi file" để đẩy mã độc webshell lên server.
+- **Phòng chống CSV Formula Injection**: Tính năng xuất lịch sử xem phim ra file CSV tuân thủ nghiêm ngặt **RFC 4180**: tự động nhân đôi dấu ngoặc kép `""` và bọc dữ liệu, đồng thời trung hòa các ký tự khởi đầu công thức (`=`, `+`, `-`, `@`) để chống tấn công thực thi mã khi mở file trên Excel.
+
+#### 4. Quản lý Vòng đời Dữ liệu Không gián đoạn (Zero-Downtime Migrations)
+- Toàn bộ thay đổi cấu trúc bảng được kiểm soát qua **10 tập lệnh Flyway Migration (V1–V10)**.
+- Nguyên tắc bất biến: Tuyệt đối không sửa đổi file migration cũ đã chạy trên production; mọi thay đổi sửa chữa đều phải tạo migration tiếp theo (forward-only).
+- Cấu hình Hibernate `ddl-auto: validate` đảm bảo entity Java và bảng vật lý khớp chính xác 100%, không cho phép ORM tự ý can thiệp cấu trúc dữ liệu khi khởi động.
+
+#### 5. Khởi tạo Chủ quyền Sản xuất Một lần (One-Time Production Bootstrap)
+- Trên môi trường Production, hệ thống từ chối khởi động nếu thiếu 3 biến bí mật: `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL`, và `BOOTSTRAP_ADMIN_PASSWORD` (mật khẩu tối thiểu 20 ký tự phức tạp).
+- Khi chạy lần đầu, hệ thống tạo tài khoản Quản trị viên tối cao, tự động **vô hiệu hóa vĩnh viễn toàn bộ 11 tài khoản seed demo** trong database và ghi nhận cờ `security_bootstrap.completed_at`. Các lần khởi động sau sẽ bỏ qua quy trình này nhằm bảo đảm an ninh tuyệt đối.
 
 ---
 
-## 🛠 Ngăn xếp công nghệ (Technology Stack)
+## 🛠 Ngăn xếp công nghệ & Thư viện (Tech Stack Breakdown)
 
-| Lớp kiến trúc | Công nghệ sử dụng | Phiên bản | Vai trò & Mục đích |
-|:---|:---|:---:|:---|
-| **Backend Runtime** | Java OpenJDK | `21 LTS` | Nền tảng thực thi với hiệu năng cao và Virtual Threads |
-| **Web Framework** | Spring Boot | `3.5.16` | Framework ứng dụng doanh nghiệp cốt lõi |
-| **Security & Auth** | Spring Security + JJWT | `6.x / 0.12.6` | Xác thực phân quyền RBAC, ký và thẩm định JWT |
-| **Database ORM** | Spring Data JPA / Hibernate | `6.x` | Tương tác dữ liệu quan hệ, transaction management |
-| **Database Engine** | PostgreSQL (Alpine) | `16` | Cơ sở dữ liệu quan hệ ACID chính thức |
-| **Database Migration** | Flyway Core | `10.x` | Quản lý vòng đời và kiểm soát phiên bản schema (V1–V10) |
-| **API Documentation** | Springdoc OpenAPI | `2.7.0` | Tự động sinh tài liệu Swagger UI chuẩn OpenAPI 3 |
-| **Image Processing** | TwelveMonkeys ImageIO | `3.15.2` | Thẩm định magic bytes và định dạng WebP cho poster |
-| **Cloud Storage SDK** | AWS SDK for Java v2 | `2.55.2` | Kết nối lưu trữ đám mây tương thích S3 (AWS / R2) |
-| **Frontend Framework**| React | `18.3.1` | Thư viện xây dựng giao diện người dùng SPA |
-| **Language** | TypeScript | `5.6.3` | Type safety toàn diện từ giao tiếp API đến UI |
-| **Build Tooling** | Vite | `6.4.3` | Bundler và môi trường phát triển front-end siêu tốc |
-| **Routing** | React Router DOM | `7.18.4` | Điều hướng Client-side SPA với lazy-loading routes |
-| **Server State** | TanStack React Query | `5.59.0` | Quản lý asynchronous state, caching và refetching |
-| **Client State** | Zustand | `5.0.0` | Quản lý auth state, profile đang hoạt động |
-| **Form & Validation** | React Hook Form + Zod | `7.53 / 3.23` | Validate form tại client với schema runtime an toàn |
-| **Styling** | TailwindCSS + PostCSS | `3.4.14` | Hệ thống thiết kế giao diện Dark Mode cao cấp |
-| **E2E & UI Testing** | Playwright + Lighthouse | `1.63 / 13.5`| Kiểm thử luồng người dùng trên trình duyệt thật |
-| **Containerization** | Docker Compose | `v2+` | Đóng gói môi trường multi-container chuẩn hóa |
-
----
-
-## 🎯 Tính năng hệ thống (Feature Matrix)
-
-Hệ thống cung cấp đầy đủ các tính năng cho hai nhóm vai trò: **Khách hàng (Customer)** và **Quản trị viên (Admin)**.
-
-### 1. Phân hệ Người dùng & Trải nghiệm xem phim (Customer Portal)
-- 🎬 **Trang chủ & Khám phá (Discovery)**: Hero Carousel phim nổi bật, bảng xếp hạng tự động (**Auto Ranking** tính theo điểm kết hợp Rating, Views và Favourites), danh mục thịnh hành (Trending Categories).
-- 🔍 **Tìm kiếm & Bộ lọc nâng cao (Search & Filter)**: Tìm kiếm tức thời đa tiêu chí (tên phim, diễn viên, đạo diễn, năm phát hành, thể loại), lưu trữ lịch sử tìm kiếm cá nhân.
-- 📺 **Trình phát Video & Chi tiết phim**: Hỗ trợ xem video chuẩn HTML5, phát Trailer YouTube tích hợp, lựa chọn phụ đề/audio tracks đa ngôn ngữ.
-- ⏱️ **Tiếp tục xem (Continue Watching)**: Tự động ghi nhận tiến độ xem phim (`watch_progress`), cho phép xem tiếp đúng mốc thời gian từ thiết bị khác.
-- 📚 **Thư viện cá nhân (Personal Library)**:
-  - **Watchlist**: Danh sách lưu chờ xem.
-  - **Favourites**: Bộ sưu tập phim yêu thích.
-  - **Watch History**: Lịch sử xem phim chi tiết kèm tính năng **Xuất báo cáo CSV chuẩn RFC 4180** (tự động escape công thức và ký tự đặc biệt).
-- 👥 **Quản lý đa hồ sơ (Multi-Profile Support)**: Cho phép tạo tối đa **5 hồ sơ (profiles)** riêng biệt trên cùng 1 tài khoản, hoàn toàn độc lập về lịch sử xem, danh sách yêu thích và cài đặt cá nhân.
-- ⚙️ **Quản lý tài khoản (Account & Security)**: Đổi mật khẩu, xem các phiên đăng nhập đang hoạt động, quy trình xác thực email và khôi phục mật khẩu an toàn.
-
-### 2. Phân hệ Quản trị nội dung (Admin CMS Console)
-- 📊 **Dashboard Thống kê (Platform Analytics)**: Biểu đồ và chỉ số tổng quan: tổng số phim, lượt xem tích lũy, điểm đánh giá trung bình, phân bổ thể loại.
-- 🎞️ **Quản lý Danh mục Phim (Movie Catalog Lifecycle)**: Thêm mới, chỉnh sửa thông tin chi tiết (thời lượng, năm, độ tuổi, đạo diễn, dàn diễn viên), quản lý nguồn stream và video trailer.
-- 🖼️ **Quản lý Media & Poster Tải lên**: Tải poster phim trực tiếp với cơ chế kiểm tra định dạng magic bytes (chống file giả mạo), giới hạn dung lượng 5MB, tự động lưu trữ trên Disk hoặc Cloud Storage.
-- 🏷️ **Quản lý Thể loại (Category Management)**: Thêm/sửa danh mục với cơ chế **Referential Integrity Guard** (chặn xoá danh mục nếu vẫn còn phim đang kích hoạt liên kết).
-- 📦 **Trung tâm Lưu trữ & Khôi phục (Soft-Delete Archive)**: Khôi phục tức thời các bộ phim hoặc danh mục đã bị vô hiệu hóa (`is_active = false`), bảo toàn dữ liệu lịch sử.
-- 👤 **Quản lý Người dùng (User Administration)**: Phân quyền vai trò (Admin / Customer), quản lý trạng thái tài khoản.
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        BACKEND CORE ECOSYSTEM                          │
+├──────────────────────┬─────────────────────────────────────────────────┤
+│ Language & Runtime   │ Java 21 LTS (OpenJDK 64-Bit Server VM)          │
+│ Framework            │ Spring Boot 3.5.16                              │
+│ Security Tier        │ Spring Security 6.x · JJWT 0.12.6               │
+│ Data Tier            │ Spring Data JPA · Hibernate 6.x · Flyway 10.x   │
+│ Connection Pooling   │ HikariCP (Tuned for managed cloud PostgreSQL)   │
+│ Media & Image Engine │ AWS Java SDK v2 (S3) · TwelveMonkeys ImageIO    │
+│ API Documentation    │ Springdoc OpenAPI 2.7.0 (Swagger UI v3)         │
+├──────────────────────┴─────────────────────────────────────────────────┤
+│                        FRONTEND CORE ECOSYSTEM                         │
+├──────────────────────┬─────────────────────────────────────────────────┤
+│ Framework & Library  │ React 18.3.1 · React DOM 18.3.1                 │
+│ Language             │ TypeScript 5.6.3 (Strict Type Checking)         │
+│ Build Tool & Server  │ Vite 6.4.3 (Fast HMR & Optimized Rollup Build)  │
+│ Routing              │ React Router DOM 7.18.4 (Code-Splitting/Lazy)   │
+│ State Management     │ Zustand 5.0.0 (Memory JWT) · TanStack Query 5.x │
+│ Forms & Validation   │ React Hook Form 7.53 · Zod 3.23 (Schema Guard)  │
+│ Styling & Icons      │ TailwindCSS 3.4.14 · PostCSS · Lucide React     │
+├──────────────────────┴─────────────────────────────────────────────────┤
+│                        DATABASE & INFRASTRUCTURE                       │
+├──────────────────────┬─────────────────────────────────────────────────┤
+│ Primary Database     │ PostgreSQL 16 (Alpine-based, UTF-8 Collation C) │
+│ Object Storage       │ S3-Compatible Cloudflare R2 / AWS S3            │
+│ Containerization     │ Docker Engine 27+ · Docker Compose v2           │
+│ Production Host      │ Cloud Managed Platforms (Vercel + Web Service)  │
+│ Live Domain Network  │ Cloudflare DNS / HTTPS SSL Termination          │
+└──────────────────────┴─────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🗄 Thiết kế cơ sở dữ liệu & Migrations
+## 🎯 Ma trận tính năng toàn diện (Feature Matrix)
 
-Cinevora sử dụng **PostgreSQL 16** với 10 tập lệnh migration tuần tự thông qua Flyway, đảm bảo tính nhất quán và khả năng phục hồi dữ liệu:
+### 1. Phân hệ Khách hàng (Customer Experience)
+- 🎬 **Trang chủ & Khám phá (Discovery)**:
+  - Hero Banner cuốn hút giới thiệu phim đặc sắc.
+  - Thuật toán **Auto-Ranking** độc quyền: $Score = (Rating \times 10) + (Views \times 0.01) + (Favourites \times 0.5)$, tự động cập nhật phim xu hướng.
+  - Danh mục thịnh hành (Trending Categories) theo lượt tương tác.
+- 🔍 **Tìm kiếm & Bộ lọc nâng cao (Search & Filtering)**:
+  - Tìm kiếm thời gian thực theo Tên phim, Diễn viên, Đạo diễn, Thể loại, Năm phát hành.
+  - Lưu trữ lịch sử tìm kiếm theo từng profile, hỗ trợ gợi ý nhanh.
+- 📺 **Trải nghiệm Phát trực tuyến (Streaming Engine)**:
+  - Tích hợp trình phát video HTML5 mượt mà.
+  - Nhúng **Trailer chính thức (Official Trailers)** bản quyền từ YouTube.
+  - Lựa chọn linh hoạt phụ đề (Subtitles) và lồng tiếng (Audio Tracks) đa ngôn ngữ.
+- ⏱️ **Tiếp tục xem (Continue Watching)**:
+  - Tự động đồng bộ mốc thời gian phát (`watch_progress`), cho phép dừng xem trên thiết bị này và tiếp tục trên thiết bị khác.
+- 📚 **Thư viện Điện ảnh Cá nhân (Personal Cinema Library)**:
+  - **Watchlist**: Danh sách phim chờ xem.
+  - **Favourites**: Bộ sưu tập các tác phẩm tâm đắc.
+  - **Watch History**: Lịch sử xem phim chi tiết kèm chức năng **Xuất báo cáo CSV chuẩn RFC 4180**.
+- 👥 **Quản lý Đa Hồ Sơ (Multi-Profile System)**:
+  - Tạo tối đa **5 hồ sơ (Profiles)** trên một tài khoản.
+  - Từng profile có tên, avatar, lịch sử xem, danh sách yêu thích và cài đặt cá nhân hóa độc lập 100%.
+- ⚙️ **Bảo mật & Cài đặt Tài khoản (Account Security)**:
+  - Đổi mật khẩu, xem danh sách phiên đăng nhập thiết bị, quy trình khôi phục mật khẩu và xác thực email.
+
+### 2. Phân hệ Quản trị (Admin CMS & Operations)
+- 📊 **Dashboard Thống kê Thời gian thực (Analytics)**:
+  - Tổng số lượng phim, thể loại, người dùng, tổng lượt xem và điểm đánh giá trung bình toàn sàn.
+- 🎞️ **Quản lý Danh mục Phim (Movie Catalog Lifecycle)**:
+  - Thêm, sửa thông tin phim đầy đủ (thời lượng, năm, độ tuổi, đạo diễn, dàn cast).
+  - Tải lên poster phim trực tiếp, tự động lưu trữ lên Cloudflare R2 / AWS S3.
+  - Gán nguồn video trực tuyến và URL trailer chính thức.
+- 🏷️ **Quản lý Thể loại (Category Governance)**:
+  - Thêm/sửa thể loại với cơ chế **Referential Integrity Guard** (ngăn chặn xóa thể loại nếu vẫn còn phim đang kích hoạt).
+- 📦 **Kho Lưu trữ & Khôi phục (Soft-Delete Archive)**:
+  - Toàn bộ entity hỗ trợ xóa mềm (`is_active = false`), lưu vào Archive.
+  - Tính năng **1-Click Restore** đưa phim hoặc thể loại hoạt động trở lại ngay lập tức.
+- 👤 **Quản lý Người dùng (User Administration)**:
+  - Xem danh sách người dùng, thay đổi vai trò (ADMIN / CUSTOMER), vô hiệu hóa tài khoản vi phạm.
+
+---
+
+## 🗄 Thiết kế Cơ sở dữ liệu & Vòng đời Migrations
+
+Hệ thống sử dụng cơ sở dữ liệu quan hệ **PostgreSQL 16** với thiết kế chuẩn hóa bậc 3 (3NF), đảm bảo toàn vẹn tham chiếu và tối ưu chỉ mục tìm kiếm:
 
 ```mermaid
 erDiagram
-    USERS ||--o{ PROFILES : "has up to 5"
-    USERS ||--o{ SESSIONS : "owns"
-    PROFILES ||--o{ WATCH_PROGRESS : "tracks"
-    PROFILES ||--o{ WATCHLIST : "adds"
-    PROFILES ||--o{ FAVOURITES : "marks"
-    PROFILES ||--o{ SEARCH_HISTORY : "queries"
-    CATEGORIES ||--o{ MOVIES : "classifies"
-    MOVIES ||--o{ WATCH_PROGRESS : "recorded in"
-    MOVIES ||--o{ MEDIA_TRACKS : "subtitles/audio"
-    MOVIES ||--o{ RATINGS : "rated by"
+    USERS ||--o{ PROFILES : "sở hữu tối đa 5"
+    USERS ||--o{ SESSIONS : "quản lý phiên"
+    USERS ||--o{ NOTIFICATIONS : "nhận"
+    PROFILES ||--o{ WATCH_PROGRESS : "lưu mốc xem"
+    PROFILES ||--o{ WATCHLIST : "lưu trữ"
+    PROFILES ||--o{ FAVOURITES : "yêu thích"
+    PROFILES ||--o{ SEARCH_HISTORY : "ghi nhớ"
+    CATEGORIES ||--o{ MOVIES : "phân loại"
+    MOVIES ||--o{ WATCH_PROGRESS : "được xem"
+    MOVIES ||--o{ MEDIA_TRACKS : "phụ đề / audio"
+    MOVIES ||--o{ RATINGS : "đánh giá"
 ```
 
-### Danh mục các bản Migration Flyway (V1–V10)
+### Chi tiết 10 bản Migration Flyway (V1 – V10)
 
-| Phiên bản | Tên tập tin script | Trọng tâm thay đổi & Nhiệm vụ nghiệp vụ |
-|:---|:---|:---|
-| **V1** | `V1__init_schema.sql` | Khởi tạo bảng gốc: `users`, `categories`, `movies`, `watch_progress`, `watchlist`, `favourites`, `movie_ratings`. Ràng buộc khoá ngoại và trigger cập nhật timestamp. |
-| **V2** | `V2__seed_data.sql` | Nạp dữ liệu khởi tạo: 7 thể loại chuẩn, 60 phim Việt Nam & Quốc tế kèm thông số views/ratings, tài khoản demo với mật khẩu băm BCrypt. |
-| **V3** | `V3__media_and_playback.sql` | Bổ sung các trường lưu trữ media, đường dẫn video playback và cấu hình nguồn phát trực tuyến. |
-| **V4** | `V4__account_sessions_and_security.sql` | Tạo bảng quản lý phiên làm việc (`sessions`), lưu trữ refresh token có băm, cơ chế epoch bảo mật tài khoản. |
-| **V5** | `V5__profiles_and_personal_data_ownership.sql` | Triển khai mô hình Multi-Profile: chuyển quyền sở hữu watchlist, favourites, watch progress từ tài khoản sang từng profile cụ thể. |
-| **V6** | `V6__preferences_and_search_history.sql` | Bổ sung bảng lưu lịch sử tìm kiếm và tùy chọn cá nhân hóa người dùng. |
-| **V7** | `V7__tracks_and_notifications.sql` | Hỗ trợ phụ đề/audio tracks đa ngôn ngữ (`media_tracks`) và hệ thống thông báo (`notifications`). |
-| **V8** | `V8__performance_indexes.sql` | Tạo chỉ mục tối ưu hóa tốc độ truy vấn tìm kiếm, auto-ranking và kiểm tra khóa ngoại đồng thời. |
-| **V9** | `V9__movie_trailer_source.sql` | Bổ sung trường nguồn trailer YouTube chính thức cho toàn bộ danh mục phim. |
-| **V10** | `V10__security_state.sql` | Thiết lập bảng trạng thái phục vụ quy trình Bootstrap Admin một lần trên môi trường production. |
-
----
-
-## 🔒 Tiêu chuẩn bảo mật & Cơ chế đồng thời (Security & Concurrency)
-
-Dự án được xây dựng và kiểm định dựa trên bộ tiêu chuẩn an toàn ứng dụng web **OWASP ASVS Level 2**:
-
-### 1. Chiến lược Xác thực Dual-Token (Dual-Token Auth Flow)
-- **Access Token**: JWT ngắn hạn (15 phút), **chỉ lưu trong bộ nhớ RAM** (Zustand JavaScript runtime), tuyệt đối không lưu vào `localStorage` hay `sessionStorage` để triệt tiêu nguy cơ bị tấn công XSS đánh cắp token.
-- **Refresh Token**: Được cấp phát qua Cookie với các cờ bảo vệ tối đa: `HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth`. Cookie này trình duyệt tự quản lý, mã JavaScript không thể đọc được.
-- **Atomic Rotation**: Khi refresh token được sử dụng, nó bị vô hiệu hóa ngay lập tức và cấp mới token khác (Single-Use Token Rotation). Trong kiểm thử đồng thời 25 luồng đua nhau refresh, hệ thống đảm bảo chính xác 1 luồng thành công và 24 luồng bị từ chối 401.
-
-### 2. Kiểm soát Đồng thời & Toàn vẹn Dữ liệu (Concurrency Controls)
-- **Profile Creation Guard**: Sử dụng cơ chế khóa mức dòng `PESSIMISTIC_WRITE` trên bảng `users` trong transaction tạo profile. Trong kịch bản 10 request tạo profile gửi đến đồng thời, hệ thống chỉ chấp thuận số lượng cho phép (tối đa 5 profile/account) và từ chối có kiểm soát với mã 400 cho các request vượt ngưỡng.
-- **Atomic Counter Invariant**: Lượt xem phim và lượt thêm yêu thích được cập nhật bằng câu lệnh update nguyên tử trong DB, tránh hiện tượng Race Condition gây sai lệch dữ liệu đếm khi có hàng chục người dùng tương tác cùng mili-giây.
-
-### 3. Vệ sinh Đầu vào & Chống Lỗ hổng (Defensive Engineering)
-- **Validation 3 tầng**: Jakarta Bean Validation ở tầng Controller $\rightarrow$ Business Domain Invariant ở tầng Service $\rightarrow$ Schema Constraints ở PostgreSQL.
-- **File Upload Hardening**:
-  - Giới hạn dung lượng tối đa 5MB.
-  - Sử dụng thư viện `TwelveMonkeys ImageIO` đọc magic bytes của file để xác định đúng định dạng ảnh (JPEG, PNG, WebP), ngăn chặn triệt để kỹ thuật đổi đuôi file để upload mã độc webshell.
-  - Tên file lưu trữ được sinh ngẫu nhiên UUIDv4, loại bỏ hoàn toàn nguy cơ Path Traversal (`../../`).
-- **Global Error Sanitization**: Mọi ngoại lệ runtime được bắt tại `GlobalExceptionHandler`, đóng gói vào cấu trúc chuẩn `ApiResponse` và không để lộ stack trace, câu lệnh SQL hay cấu trúc thư mục nội bộ ra bên ngoài.
+| Script Migration | Ngày áp dụng | Nội dung kỹ thuật chi tiết |
+|:---|:---:|:---|
+| `V1__init_schema.sql` | Giai đoạn 1 | Khởi tạo bảng nền tảng: `users`, `categories`, `movies`, `watch_progress`, `watchlist`, `favourites`, `movie_ratings`. Ràng buộc khóa ngoại, trigger tự động cập nhật `updated_at`. |
+| `V2__seed_data.sql` | Giai đoạn 1 | Seed dữ liệu chuẩn: 7 danh mục, 60 phim tuyển chọn (Việt Nam & Thế giới), tài khoản mẫu với mật khẩu băm BCrypt. |
+| `V3__media_and_playback.sql` | Giai đoạn 2 | Bổ sung các cột phục vụ phát video trực tuyến, thumbnail URL và cấu hình media storage. |
+| `V4__account_sessions_and_security.sql` | Giai đoạn 2 | Bổ sung bảng `sessions` lưu trữ hash refresh token, cơ chế epoch bảo vệ phiên và thu hồi từ xa. |
+| `V5__profiles_and_personal_data_ownership.sql` | Giai đoạn 3 | Triển khai mô hình Multi-Profile: di chuyển quyền sở hữu Watchlist, Favourites, Watch Progress sang `profile_id`. |
+| `V6__preferences_and_search_history.sql` | Giai đoạn 3 | Bảng lưu lịch sử tìm kiếm và tùy chọn cá nhân hóa của từng profile. |
+| `V7__tracks_and_notifications.sql` | Giai đoạn 3 | Bổ sung bảng `media_tracks` (phụ đề VTT, audio đa ngôn ngữ) và bảng thông báo `notifications`. |
+| `V8__performance_indexes.sql` | Giai đoạn 4 | Đánh chỉ mục (B-Tree & GiST) tối ưu hóa truy vấn tìm kiếm, auto-ranking và foreign key lookups. |
+| `V9__movie_trailer_source.sql` | Giai đoạn 5 | Bổ sung cột lưu trữ trailer URL YouTube chính thức cho toàn bộ 60 tác phẩm điện ảnh. |
+| `V10__security_state.sql` | Giai đoạn 6 | Tạo bảng trạng thái `security_bootstrap` phục vụ quy trình khởi tạo Admin an toàn trên production. |
 
 ---
 
-## ⚡ Hướng dẫn cài đặt & Khởi chạy (Quick Start)
+## 🔒 Tiêu chuẩn An toàn thông tin & Xử lý đồng thời (Security & Concurrency)
 
-### Yêu cầu tiên quyết (Prerequisites)
-- [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (khuyến nghị chạy với WSL2 trên Windows)
-- *(Tùy chọn nếu chạy thủ công không dùng Docker)*: JDK 21 LTS, Node.js 20+, Maven 3.9+, PostgreSQL 16.
+Dự án tuân thủ nghiêm ngặt các khuyến nghị từ **OWASP Top 10** và **ASVS Level 2**:
+
+1. **Không lưu trữ mật khẩu dạng Plaintext (Zero Plaintext Policy)**:
+   - Toàn bộ mật khẩu được băm bằng thuật toán **BCrypt** với cost factor 10, độ dài chuỗi băm chuẩn 60 ký tự (`$2a$10$...`).
+   - Mật khẩu gốc của bản demo CLI cũ đã bị loại bỏ vĩnh viễn khỏi commit history.
+2. **Bảo vệ Cookie phiên làm việc (Session & Cookie Hygiene)**:
+   - Cookie chứa refresh token được gắn cờ `HttpOnly` (chống trộm qua mã độc XSS), `Secure` (chỉ truyền qua kênh HTTPS mã hóa), và `SameSite=Lax` (ngăn ngừa tấn công CSRF).
+3. **Cơ chế Khởi tạo Admin Sản xuất Độc lập (Bootstrap Admin Gate)**:
+   - Ngăn chặn triệt để việc dùng tài khoản mặc định `admin/admin`.
+   - Production boot kiểm tra nghiêm ngặt: tên đăng nhập riêng biệt, email duy nhất, mật khẩu phức tạp trên 20 ký tự (không chứa từ khóa "cinevora", tối thiểu 12 ký tự khác nhau).
+   - Tự động khóa toàn bộ tài khoản demo khi bootstrap hoàn tất.
+4. **Vệ sinh Dữ liệu & Xử lý Ngoại lệ Tập trung (Error Sanitization)**:
+   - Tầng `GlobalExceptionHandler` bắt và phân loại lỗi: 400 (Bad Request), 404 (Not Found), 413 (Payload Too Large), 415 (Unsupported Media Type), 429 (Rate Limited), 500 (Internal Error).
+   - Tuyệt đối không để rò rỉ stack trace, tên class, câu lệnh SQL hay đường dẫn thư mục server ra client.
+5. **Rate Limiting chống Brute-Force & DoS**:
+   - Sử dụng bộ lọc đếm tần suất trên các endpoint nhạy cảm (`/api/v1/auth/login`, tìm kiếm, tạo tài khoản). Trả về HTTP 429 kèm header hướng dẫn khi vượt ngưỡng an toàn.
 
 ---
 
-### Cách 1: Khởi chạy Full-Stack bằng Docker Compose (Khuyến nghị)
+## 📡 Đặc tả API & Chuẩn giao tiếp (API Specification)
 
-Đây là cách nhanh nhất và chuẩn xác nhất để trải nghiệm toàn bộ hệ thống với cấu hình đã được kiểm định.
+Toàn bộ API được phục vụ dưới tiền tố `/api/v1`, tuân thủ chuẩn RESTful và cấu trúc đóng gói thống nhất:
+
+### 1. Cấu trúc Phản hồi Chuẩn (`ApiResponse<T>`)
+
+```json
+// Phản hồi Thành công (HTTP 200 / 201)
+{
+  "success": true,
+  "message": "Success",
+  "data": { ... },
+  "timestamp": "2026-09-24T14:00:00Z"
+}
+
+// Phản hồi Thất bại (HTTP 400 / 401 / 403 / 404 / 413 / 415 / 429 / 500)
+{
+  "success": false,
+  "message": "Tài nguyên không tồn tại hoặc dữ liệu không hợp lệ",
+  "errorCode": "RESOURCE_NOT_FOUND",
+  "timestamp": "2026-09-24T14:00:00Z"
+}
+```
+
+### 2. Danh mục các Nhóm Endpoint Chính
+
+| Nhóm API | Endpoint cơ sở | Quyền hạn | Mô tả chức năng |
+|:---|:---|:---:|:---|
+| 🔐 **Authentication** | `/api/v1/auth/*` | Public / Cookie | Đăng nhập, đăng ký, refresh token cookie, đăng xuất, đổi/quên mật khẩu |
+| 🎬 **Movies** | `/api/v1/movies/*` | Public / User | Danh sách phim, chi tiết, auto-ranking, tìm kiếm, trailer |
+| 🏷️ **Categories** | `/api/v1/categories/*` | Public | Danh sách các thể loại phim đang kích hoạt |
+| 👤 **User Space** | `/api/v1/users/me/*` | Customer / Admin | Quản lý Profile, Watchlist, Favourites, Watch History, CSV Export |
+| 🛠️ **Admin Movies** | `/api/v1/admin/movies/*` | **ADMIN** | Thêm, sửa, xóa mềm phim, upload poster, gán trailer video |
+| 🛠️ **Admin Categories** | `/api/v1/admin/categories/*`| **ADMIN** | Quản lý thể loại, kiểm tra ràng buộc khóa ngoại trước khi xóa |
+| 📦 **Admin Archive** | `/api/v1/admin/archive/*` | **ADMIN** | Quản lý kho lưu trữ và khôi phục (1-Click Restore) |
+| 👥 **Admin Users** | `/api/v1/admin/users/*` | **ADMIN** | Danh sách người dùng, kích hoạt / khóa tài khoản, phân quyền |
+| 📈 **Admin Stats** | `/api/v1/admin/statistics/*`| **ADMIN** | Chỉ số tổng quan hệ thống phục vụ báo cáo quản trị |
+| ❤️ **Health Check** | `/actuator/health` | Public | Giám sát trạng thái hoạt động (Liveness/Readiness) của Service & DB |
+
+---
+
+## ⚡ Hướng dẫn cài đặt & Khởi chạy cục bộ (Local Quick Start)
+
+### Cách 1: Khởi chạy nhanh bằng Docker Compose (Khuyến nghị)
+
+Toàn bộ dịch vụ (PostgreSQL 16, Spring Boot Backend, React Frontend Nginx) đã được đóng gói hoàn chỉnh:
 
 ```powershell
-# 1. Clone repository
+# 1. Clone mã nguồn
 git clone https://github.com/thach09/cinevora.git
 cd cinevora
 
-# 2. Thiết lập biến môi trường local từ file mẫu
+# 2. Tạo file biến môi trường local từ template
 Copy-Item .env.example .env    # Trên Windows PowerShell
-# hoặc: cp .env.example .env     # Trên Linux / macOS
+# cp .env.example .env         # Trên Linux / macOS
 
-# 3. Khởi động toàn bộ cụm container (PostgreSQL, Backend, Frontend)
+# 3. Khởi chạy toàn bộ hệ thống bằng Docker Compose
 docker compose up --build -d
 ```
 
@@ -256,230 +349,166 @@ Sau khi các container hoàn tất khởi động và đạt trạng thái `heal
 
 | Dịch vụ | Địa chỉ truy cập | Ghi chú |
 |:---|:---|:---|
-| 🌐 **Frontend Web App** | `http://localhost:8088` | Giao diện React SPA đầy đủ tính năng |
+| 🌐 **Frontend Web App** | `http://localhost:8088` | Giao diện người dùng React SPA hoàn chỉnh |
 | 🔌 **Backend REST API** | `http://localhost:8080` | Endpoint gốc của API dịch vụ |
-| 📑 **Swagger API Docs** | `http://localhost:8080/swagger-ui.html` | OpenAPI interactive documentation |
-| ❤️ **Health Check** | `http://localhost:8080/actuator/health` | Trả về trạng thái UP của hệ thống |
+| 📑 **Swagger API Docs** | `http://localhost:8080/swagger-ui.html` | Tài liệu OpenAPI tương tác trực tiếp |
+| ❤️ **Health Check** | `http://localhost:8080/actuator/health` | Kiểm tra tình trạng kết nối Database & App |
 
-Để dừng hệ thống nhưng vẫn bảo lưu dữ liệu:
+Dừng hệ thống và bảo lưu dữ liệu:
 ```powershell
 docker compose down
 ```
 
 ---
 
-### Cách 2: Khởi chạy môi trường phát triển (Local Development)
+### Cách 2: Chạy môi trường Phát triển (Local Development)
 
-Nếu bạn muốn debug trực tiếp mã nguồn Backend hoặc Frontend trên IDE (IntelliJ IDEA / VS Code):
-
-#### Bước 1: Khởi động cơ sở dữ liệu PostgreSQL
+#### 1. Khởi động PostgreSQL
 ```powershell
 docker compose up -d postgres
 ```
 
-#### Bước 2: Chạy Backend Spring Boot
+#### 2. Khởi động Backend (Spring Boot)
 ```powershell
 cd backend
-# Cấu hình file .env hoặc nạp biến môi trường cho IDE:
-# SPRING_PROFILES_ACTIVE=dev
+# Đảm bảo nạp các biến môi trường từ .env:
 # SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/cinevora_db
 # SPRING_DATASOURCE_USERNAME=postgres
-# SPRING_DATASOURCE_PASSWORD=<mật-khẩu-trong-.env>
-# JWT_SECRET=<chuỗi-ngẫu-nhiên-trên-48-bytes>
+# SPRING_DATASOURCE_PASSWORD=postgres
+# JWT_SECRET=<chuỗi-ngẫu-nhiên-tối-thiểu-48-bytes>
 
-./mvnw spring-boot:run          # Linux / macOS
-# hoặc: .\mvnw.cmd spring-boot:run # Windows
+.\mvnw.cmd spring-boot:run     # Trên Windows
+# ./mvnw spring-boot:run       # Trên Linux / macOS
 ```
 
-#### Bước 3: Chạy Frontend Vite React
+#### 3. Khởi động Frontend (React Vite)
 ```powershell
 cd frontend
 npm install
 npm run dev
 ```
-Giao diện phát triển sẽ mở tại `http://localhost:5173`.
+Ứng dụng frontend phát triển sẽ sẵn sàng tại `http://localhost:5173`.
 
 ---
 
-### 🔑 Thông tin tài khoản thử nghiệm (Demo Credentials)
+## 🌐 Kiến trúc Triển khai Thực tế (Production Deployment Topology)
 
-> [!IMPORTANT]
-> Toàn bộ mật khẩu trong cơ sở dữ liệu seed đã được băm an toàn bằng **BCrypt**. Giá trị mật khẩu đăng nhập cho môi trường local được cấu hình thông qua biến `DEMO_PASSWORD` trong file `.env` cá nhân của bạn.
->
-> Khi triển khai lên môi trường Production, cơ chế **Bootstrap Admin** sẽ kích hoạt: hệ thống tự động vô hiệu hóa toàn bộ các tài khoản demo này và chỉ khởi tạo một tài khoản Quản trị viên duy nhất dựa trên biến môi trường bí mật do nhà cung cấp đám mây cấp.
+Hệ thống hiện đang vận hành ổn định trên môi trường đám mây với tên miền chính thức:
 
-| Tài khoản mẫu | Quyền hạn (Role) | Dữ liệu khởi tạo sẵn |
-|:---|:---:|:---|
-| `admin` | **ADMIN** | Toàn quyền truy cập Dashboard, CRUD phim, thể loại, quản lý người dùng |
-| `thietthach09` | **CUSTOMER** | Đầy đủ dữ liệu mẫu: Watchlist, Favourites, Lịch sử xem phim |
-| `messi10` | **CUSTOMER** | Dữ liệu mẫu phim kinh điển, lịch sử xem |
-| *8 tài khoản khác* | **CUSTOMER** | Tài khoản trắng sẵn sàng để kiểm thử đăng ký, thêm hồ sơ mới |
-
----
-
-## 📡 Tài liệu API & Chuẩn giao tiếp (API Specification)
-
-Toàn bộ API được phục vụ dưới tiền tố `/api/v1` và tuân thủ chặt chẽ định dạng phản hồi chuẩn hóa:
-
-### 1. Cấu trúc phản hồi chuẩn (`ApiResponse<T>`)
-
-```json
-// Thành công (HTTP 200/201)
-{
-  "success": true,
-  "message": "Operation completed successfully",
-  "data": { ... },
-  "timestamp": "2026-09-24T10:00:00Z"
-}
-
-// Thất bại (HTTP 400/401/403/404/413/415/429/500)
-{
-  "success": false,
-  "message": "Resource not found or validation failed",
-  "errorCode": "MOVIE_NOT_FOUND",
-  "timestamp": "2026-09-24T10:00:00Z"
-}
+```
+                          INTERNET (USERS)
+                                 │
+                                 ▼
+                     Cloudflare DNS & SSL Edge
+            ┌────────────────────┴────────────────────┐
+            ▼                                         ▼
+   https://cinevora.store                  https://api.cinevora.store
+   ┌───────────────────────┐               ┌────────────────────────┐
+   │   Frontend SPA Host   │               │   Backend Web Service  │
+   │   React 18 / Vite     │ ────────────> │   Spring Boot 3.5.16   │
+   │   (Vercel Platform)   │  API Requests │   (Cloud Container)    │
+   └───────────────────────┘  HttpOnly     └───────────┬────────────┘
+                              Cookies                  │
+                                           ┌───────────┴────────────┐
+                                           ▼                        ▼
+                               ┌──────────────────────┐ ┌──────────────────────┐
+                               │  Managed PostgreSQL  │ │  Cloudflare R2 (S3)  │
+                               │  v16 + SSL Require   │ │  Media & Posters     │
+                               │  ACID Transactions   │ │  Immutable Storage   │
+                               └──────────────────────┘ └──────────────────────┘
 ```
 
-### 2. Các nhóm Endpoint chính
-
-| Nhóm Endpoint | Đường dẫn cơ sở | Mô tả nghiệp vụ |
-|:---|:---|:---|
-| 🔐 **Authentication** | `/api/v1/auth/*` | Đăng nhập, đăng ký, refresh token qua cookie, đổi/quên mật khẩu, đăng xuất |
-| 🎬 **Movies Public** | `/api/v1/movies/*` | Danh sách phim, chi tiết, top ranking, danh mục, tìm kiếm đa tiêu chí |
-| 🏷️ **Categories** | `/api/v1/categories/*` | Danh sách thể loại phim đang hoạt động |
-| 👤 **User Space** | `/api/v1/users/me/*` | Quản lý profile, thư viện Watchlist, Favourites, Watch History, CSV Export |
-| 🛠️ **Admin Movies** | `/api/v1/admin/movies/*` | CRUD danh mục phim, upload poster, gán video trailer |
-| 🛠️ **Admin Categories** | `/api/v1/admin/categories/*`| CRUD thể loại, kiểm tra ràng buộc khóa ngoại an toàn |
-| 📦 **Admin Archive** | `/api/v1/admin/archive/*` | Danh sách lưu trữ và tính năng 1-click restore phim/thể loại |
-| 👥 **Admin Users** | `/api/v1/admin/users/*` | Tra cứu danh sách và kiểm soát trạng thái người dùng |
-| 📈 **Admin Stats** | `/api/v1/admin/statistics/*`| Chỉ số đo lường nền tảng phục vụ quản trị |
-| 🩺 **System Health** | `/actuator/health` | Kiểm tra trạng thái hoạt động của Service và DB |
+### Các thông số triển khai đã cấu hình:
+- **Tên miền Web**: `https://cinevora.store`
+- **Tên miền API**: `https://api.cinevora.store/api/v1`
+- **Lưu trữ Poster**: Tích hợp S3-compatible Object Storage (Cloudflare R2) với endpoint công khai `https://media.cinevora.store`.
+- **An toàn Cookie**: Thỏa mãn trọn vẹn quy tắc `SameSite=Lax` nhờ thiết kế cùng site cha (`cinevora.store`), giải quyết triệt để vấn đề bị trình duyệt chặn cookie khi dùng domain phụ miễn phí.
 
 ---
 
-## 📁 Cấu trúc thư mục dự án (Repository Tree)
+## 📁 Cấu trúc mã nguồn (Repository Structure)
 
 ```
 cinevora/
-├── backend/                               # Spring Boot 3.5.16 Application
+├── backend/                               # Mã nguồn Spring Boot REST API
 │   ├── src/main/java/com/cinevora/
-│   │   ├── config/                        # Cấu hình Security, CORS, S3/Media, Swagger
-│   │   ├── controller/                    # REST Controllers (/api/v1)
+│   │   ├── config/                        # Cấu hình Security, CORS, S3/Media, OpenAPI
+│   │   ├── controller/                    # REST Controllers (/api/v1/...)
 │   │   ├── dto/                           # Data Transfer Objects & API Envelopes
 │   │   ├── entity/                        # JPA Domain Entities
-│   │   ├── exception/                     # Global Exception Handler & Custom Errors
+│   │   ├── exception/                     # Global Exception Handler & Business Errors
 │   │   ├── repository/                    # Spring Data JPA Repositories
-│   │   ├── security/                      # JWT Token Provider, Auth Filters, UserDetails
-│   │   └── service/                       # Business Logic Layer (Transaction Managed)
+│   │   ├── security/                      # JWT Provider, Auth Filters, SecurityContext
+│   │   └── service/                       # Tầng Business Logic & Transaction Management
 │   ├── src/main/resources/
-│   │   ├── application.yml                # Cấu hình dùng chung
-│   │   ├── application-dev.yml            # Môi trường phát triển cục bộ
-│   │   ├── application-prod.yml           # Môi trường Cloud Production an toàn
+│   │   ├── application.yml                # Cấu hình chung của ứng dụng
+│   │   ├── application-dev.yml            # Profile môi trường phát triển cục bộ
+│   │   ├── application-prod.yml           # Profile môi trường Cloud Production tối ưu
 │   │   └── db/migration/                  # 10 kịch bản Flyway Migrations (V1–V10)
-│   ├── src/test/                          # Unit & Integration Test Suites
-│   └── pom.xml                            # Quản lý dependencies Maven
-├── frontend/                              # React 18 + Vite + TypeScript Application
+│   ├── src/test/                          # Toàn bộ Unit & Concurrency Test Suites
+│   └── pom.xml                            # Quản lý thư viện Maven (Java 21)
+├── frontend/                              # Mã nguồn React SPA Client
 │   ├── src/
-│   │   ├── components/                    # UI Components (Player, Layout, Cards, Modal)
-│   │   ├── pages/                         # Màn hình chính (Auth, Browse, Detail, CMS)
-│   │   ├── store/                         # Zustand Stores (AuthStore, ProfileStore)
-│   │   ├── types/                         # TypeScript Type Definitions
-│   │   ├── routes.tsx                     # Định tuyến Client (Protected & Role Routes)
-│   │   └── main.tsx                       # Entry Point ứng dụng
-│   ├── tests/e2e/                         # Bộ kiểm thử trình duyệt Playwright E2E
-│   └── package.json                       # Scripts & Dependencies frontend
-├── legacy-cli/                            # Phiên bản gốc Java Core CLI (Bảo tồn OOP mẫu)
-│   ├── src/                               # Mã nguồn Pure Java, MVC, Custom Stack/Sort
-│   └── run.bat                            # Script chạy bản CLI lịch sử
-├── docs/                                  # Tài liệu kỹ thuật chi tiết
-│   ├── adr/                               # Architecture Decision Records
-│   ├── database/                          # Seed mapping & Migration runbooks
-│   ├── deployment/                        # Sổ tay hướng dẫn triển khai Cloud
-│   ├── erd/                               # Bản vẽ thiết kế cơ sở dữ liệu quan hệ
-│   ├── roadmap/                           # Lộ trình 7 Phase từ thiết kế đến bàn giao
-│   ├── security/                          # Ma trận ASVS, Threat Model, DDoS Defense
+│   │   ├── components/                    # UI Components (Video Player, Layout, Modal)
+│   │   ├── pages/                         # Màn hình (Browse, Detail, Auth, CMS Admin)
+│   │   ├── store/                         # Quản lý State bằng Zustand (Auth & Profile)
+│   │   ├── types/                         # Định nghĩa kiểu dữ liệu TypeScript
+│   │   ├── routes.tsx                     # Định tuyến Client-Side (Role & Protected Routes)
+│   │   └── main.tsx                       # Điểm khởi chạy React DOM
+│   ├── tests/e2e/                         # Bộ kịch bản kiểm thử trình duyệt Playwright E2E
+│   └── package.json                       # Cấu hình scripts & dependencies frontend
+├── legacy-cli/                            # Phiên bản gốc Java Core CLI (Bảo tồn di sản OOP)
+│   ├── src/                               # Code Java thuần: Custom Stack, Bubble Sort, MVC
+│   └── run.bat                            # Script khởi chạy console CLI
+├── docs/                                  # Hệ thống tài liệu kỹ thuật hoàn chỉnh
+│   ├── database/                          # Seed mapping, ERD & Migration runbook
+│   ├── deployment/                        # Sổ tay triển khai đám mây (Deployment Runbook)
+│   ├── security/                          # Ma trận ASVS, Threat Model & Báo cáo an ninh
 │   └── verification/                      # Báo cáo Audit độc lập & Remediation thực tế
-├── tools/                                 # Công cụ hỗ trợ độc lập bằng JDK thuần
-│   ├── PasswordHashGenerator.java         # Tạo hash BCrypt chuẩn
-│   └── SeedSqlGenerator.java              # Sinh dữ liệu seed V2
+├── tools/                                 # Scripts hỗ trợ nạp dữ liệu (Poster/Trailer Import)
 ├── .github/workflows/                     # Pipeline CI/CD tự động (5 workflows)
-├── docker-compose.yml                     # Cấu hình triển khai container local
-├── .env.example                           # Mẫu khai báo biến môi trường chuẩn
-├── AGENTS.md                              # Nguyên tắc kỹ thuật & Quy chuẩn repo
+├── docker-compose.yml                     # Cấu hình Docker Compose đa dịch vụ
+├── .env.example                           # File mẫu cấu hình biến môi trường
+├── AGENTS.md                              # Nguyên tắc kỹ thuật bắt buộc của dự án
 └── README.md                              # Tài liệu tổng quan dự án
 ```
 
 ---
 
-## 🌐 Hướng dẫn triển khai Production (Production Runbook)
+## 💡 Di sản Thuật toán & Nền tảng OOP (Algorithmic Heritage)
 
-### 1. Kiến trúc Tên miền Same-Site Bắt buộc (Crucial Topology Requirement)
-Do cơ chế bảo mật xác thực sử dụng cookie `Secure; HttpOnly; SameSite=Lax`, **Frontend và Backend API bắt buộc phải nằm trên cùng một Site cấp 2 (Same-Site Domain)** hoặc sử dụng Reverse Proxy cùng origin:
+Mặc dù Cinevora đã chuyển đổi toàn diện sang kiến trúc Full-Stack Web hiện đại, toàn bộ giá trị cốt lõi về **Lập trình Hướng đối tượng (OOP)** và **Cấu trúc Dữ liệu & Giải thuật** từ phiên bản gốc vẫn được tôn trọng và kế thừa:
 
-- ✅ **Mô hình hợp lệ (Supported)**:
-  - Frontend: `https://cinevora.com` (hoặc `https://app.cinevora.com`)
-  - Backend API: `https://api.cinevora.com`
-- ❌ **Mô hình không được hỗ trợ (Blocked by Browser Cookie Policy)**:
-  - Frontend dùng subdomain miễn phí của Vercel: `https://cinevora.vercel.app`
-  - Backend dùng subdomain miễn phí của Render: `https://cinevora-api.onrender.com`
-  *(Trình duyệt hiện đại sẽ coi đây là Cross-Site và từ chối gửi Cookie xác thực khi thực hiện request).*
-
-### 2. Danh mục Biến môi trường Bắt buộc cho Production
-
-```ini
-# Spring Profile
-SPRING_PROFILES_ACTIVE=prod
-
-# Cơ sở dữ liệu PostgreSQL có chứng chỉ SSL
-SPRING_DATASOURCE_URL=jdbc:postgresql://<db-host>:5432/<db-name>
-DB_USERNAME=<db-user>
-DB_PASSWORD=<db-strong-password>
-DB_SSL_MODE=require
-
-# Khóa bí mật JWT (sinh ngẫu nhiên >= 48 bytes)
-JWT_SECRET=<super-secret-random-bytes-key>
-
-# Giới hạn nguồn gốc CORS (Chính xác domain Frontend)
-CORS_ALLOWED_ORIGINS=https://cinevora.com
-
-# Thông tin Bootstrap Admin một lần duy nhất (Không commit vào Git!)
-BOOTSTRAP_ADMIN_USERNAME=owner_admin
-BOOTSTRAP_ADMIN_EMAIL=admin@cinevora.com
-BOOTSTRAP_ADMIN_PASSWORD=<mat-khau-tren-20-ky-tu-cuc-manh>
-
-# Dịch vụ lưu trữ Object Storage (AWS S3 hoặc Cloudflare R2)
-MEDIA_STORAGE=s3
-MEDIA_S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-MEDIA_S3_REGION=auto
-MEDIA_S3_BUCKET=cinevora-media
-MEDIA_PUBLIC_BASE_URL=https://media.cinevora.com
-MEDIA_S3_ACCESS_KEY=<access-key>
-MEDIA_S3_SECRET_KEY=<secret-key>
-```
-
-> Chi tiết các bước triển khai chi tiết từng dịch vụ đám mây (Render, Railway, Vercel, Cloudflare R2) được hướng dẫn từng bước trong [DEPLOYMENT_RUNBOOK.md](docs/deployment/DEPLOYMENT_RUNBOOK.md).
+| Giải thuật / Kỹ thuật gốc | Triển khai trong CLI (`legacy-cli/`) | Kế thừa trong Web Hiện đại (`backend/`) |
+|:---|:---|:---|
+| **Undo / Redo** | `CustomStack<T>` tự cài đặt bằng Linked Node (O(1)) | Quản lý trạng thái Client Store với optimistic update |
+| **Sắp xếp Đa hình** | `Bubble Sort` tự viết trong `SortUtils.java` | Spring Data JPA Sorting kết hợp SQL B-Tree Indexes tối ưu |
+| **Tìm kiếm Tuyến tính** | `Linear Search` tự viết trong `SearchUtils.java` | PostgreSQL ILIKE Indexing & Trigram Search Engine |
+| **Công thức Auto Ranking** | Tự tính điểm: $Rating \times 10 + Views \times 0.01 + Fav \times 0.5$ | Tích hợp thành thuật toán tính điểm thời gian thực trong `MovieService` |
+| **Xuất báo cáo CSV** | Tự viết thuật toán format và escape ký tự RFC 4180 | Module xuất file CSV chống Formula Injection độc lập |
+| **Bảo vệ Tham chiếu (Deep Copy)**| Sử dụng Copy Constructor chống Encapsulation Leak | Áp dụng DTO Pattern cô lập hoàn toàn Entity với Client |
 
 ---
 
-## 👤 Thông tin tác giả & Bản quyền
+## 👤 Tác giả & Bản quyền
 
-Dự án được xây dựng và phát triển bởi:
+Dự án được nghiên cứu, thiết kế kiến trúc và triển khai hoàn thiện bởi:
 
 **Đỗ Thiết Thạch**  
-*Full-Stack Software Engineer — FPT University*  
+*Backend Engineer & Full-Stack Developer — FPT University*  
 - **GitHub**: [@thach09](https://github.com/thach09)  
-- **Repository**: [thach09/cinevora](https://github.com/thach09/cinevora)
+- **Live Platform**: [cinevora.store](https://cinevora.store)  
+- **Project Repo**: [thach09/cinevora](https://github.com/thach09/cinevora)
 
-### Bản quyền (License)
-Dự án được phân phối dưới giấy phép **MIT License**. Bạn được tự do sử dụng, chỉnh sửa và phân phối lại cho các mục đích nghiên cứu và thương mại. Xem chi tiết tại [LICENSE](LICENSE).
+### Giấy phép (License)
+Dự án được phát hành theo giấy phép **MIT License**. Bạn được toàn quyền sử dụng, chỉnh sửa và phân phối cho mục đích học tập, nghiên cứu và thương mại. Xem chi tiết tại [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
 
-**⭐ Nếu bạn thấy dự án này chuyên nghiệp và hữu ích, hãy để lại một Star trên GitHub để ủng hộ tác giả! ⭐**
+**⭐ Nếu bạn thấy dự án này chuyên nghiệp và truyền cảm hứng, hãy tặng 1 Star trên GitHub để ủng hộ tác giả! ⭐**
 
-*Cinevora — Professional Portfolio Project demonstrating end-to-end Senior Engineering Standards.*
+*Cinevora — Built with passion, software craftsmanship, and enterprise engineering excellence.*
 
 </div>
