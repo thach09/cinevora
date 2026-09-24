@@ -9,6 +9,9 @@ import com.cinevora.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 @Service
 public class NotificationService {
     private final NotificationRepository notifications;
@@ -17,6 +20,20 @@ public class NotificationService {
     @Transactional(readOnly = true) public NotificationDtos.Inbox inbox(String username) { User user = user(username); return new NotificationDtos.Inbox(notifications.findTop20ByUser_IdOrderByCreatedAtDesc(user.getId()).stream().map(NotificationDtos.Response::from).toList(), notifications.countByUser_IdAndReadAtIsNull(user.getId())); }
     @Transactional public void markRead(String username, Long id) { Notification notification = notifications.findByIdAndUser_Id(id, user(username).getId()).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy notification " + id)); notification.markRead(); }
     @Transactional public void markAllRead(String username) { notifications.findByUser_IdAndReadAtIsNull(user(username).getId()).forEach(Notification::markRead); }
-    @Transactional public void create(User user, String kind, String title, String body, String actionUrl) { notifications.save(new Notification(user, kind, title, body, actionUrl)); }
+    @Transactional public void create(User user, String kind, String title, String body, String actionUrl) { notifications.save(new Notification(user, kind, title, body, safeActionUrl(actionUrl))); }
+    private String safeActionUrl(String actionUrl) {
+        if (actionUrl == null || actionUrl.isBlank()) return null;
+        String value = actionUrl.trim();
+        if (value.length() > 500 || value.indexOf('\u0000') >= 0 || value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0)
+            throw new IllegalArgumentException("Notification action URL is invalid");
+        try {
+            URI uri = new URI(value);
+            if (!value.startsWith("/") || value.startsWith("//") || uri.isAbsolute() || uri.getFragment() != null)
+                throw new IllegalArgumentException("Notification action URL must be a relative application path");
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException("Notification action URL is invalid", ex);
+        }
+        return value;
+    }
     private User user(String username) { return users.findByUsernameIgnoreCase(username).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user")); }
 }

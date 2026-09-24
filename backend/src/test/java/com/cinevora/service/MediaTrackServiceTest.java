@@ -1,6 +1,8 @@
 package com.cinevora.service;
 
 import com.cinevora.exception.ResourceNotFoundException;
+import com.cinevora.dto.MediaTrackDtos;
+import com.cinevora.entity.Movie;
 import com.cinevora.repository.MovieRepository;
 import com.cinevora.repository.MovieTrackRepository;
 import org.junit.jupiter.api.Test;
@@ -27,5 +29,15 @@ class MediaTrackServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> service.publicList(61L));
         verifyNoInteractions(tracks);
+    }
+
+    @Test
+    void createRejectsNonHttpTrackSources() {
+        Movie movie = org.mockito.Mockito.mock(Movie.class);
+        when(movies.findById(61L)).thenReturn(Optional.of(movie));
+
+        assertThrows(IllegalArgumentException.class, () -> service.create(61L,
+                new MediaTrackDtos.Request("SUBTITLE", "en", "English", "javascript:alert(1)", false)));
+        org.mockito.Mockito.verifyNoInteractions(tracks);
     }
 }
