@@ -19,6 +19,16 @@ spring:
       max-file-size: ${MEDIA_POSTER_MAX_SIZE:5MB}
       max-request-size: ${MEDIA_REQUEST_MAX_SIZE:6MB}
 server:
+  forward-headers-strategy: none
+  max-http-request-header-size: 8KB
+  tomcat:
+    max-connections: 200
+    accept-count: 50
+    connection-timeout: 10s
+    keep-alive-timeout: 15s
+    threads:
+      max: 40
+      min-spare: 4
   port: ${PORT:8080}
   shutdown: graceful
   servlet:

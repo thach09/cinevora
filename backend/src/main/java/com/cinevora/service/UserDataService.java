@@ -52,5 +52,10 @@ public class UserDataService {
     private User current(String username) { return users.findByUsernameIgnoreCase(username).filter(User::isActive).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản hiện tại")); }
     private Profile profile(String username, Long profileId) { return profiles.resolve(username, profileId); }
     private Movie activeMovie(Long id) { return movies.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phim " + id)); }
-    private String csv(String value) { return value == null ? "" : '"' + value.replace("\"", "\"\"") + '"'; }
+    private String csv(String value) {
+        if (value == null) return "";
+        String safe = value;
+        if (!safe.isEmpty() && ("=+-@".indexOf(safe.stripLeading().isEmpty() ? ' ' : safe.stripLeading().charAt(0)) >= 0 || safe.charAt(0) < 32)) safe = "'" + safe;
+        return '"' + safe.replace("\"", "\"\"") + '"';
+    }
 }

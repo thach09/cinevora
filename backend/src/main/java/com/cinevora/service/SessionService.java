@@ -14,6 +14,7 @@ import java.util.List;
 
 @Service
 public class SessionService {
+    @org.springframework.beans.factory.annotation.Value("${app.auth.block-demo-identities:false}") private boolean blockDemo;
     private final UserSessionRepository sessions;
     private final long refreshDays;
 
@@ -24,24 +25,27 @@ public class SessionService {
     @Transactional
     public String create(User user, String userAgent, String ipAddress) {
         String refreshToken = TokenService.randomToken();
-        sessions.save(new UserSession(user, TokenService.sha256(refreshToken), userAgent, ipAddress, Instant.now().plus(refreshDays, ChronoUnit.DAYS)));
+        sessions.save(new UserSession(user, TokenService.sha256(refreshToken), bounded(userAgent, 500), bounded(ipAddress, 64), Instant.now().plus(refreshDays, ChronoUnit.DAYS)));
         return refreshToken;
     }
 
+    public record Rotation(User user, String token) {}
+
+    /** The database lock serializes consumption across threads and processes. */
     @Transactional
-    public User rotate(String refreshToken, String userAgent, String ipAddress) {
-        UserSession old = active(refreshToken);
+    public Rotation consume(String refreshToken, String userAgent, String ipAddress) {
+        if (refreshToken == null || !refreshToken.matches("[A-Za-z0-9_-]{64}"))
+            throw new org.springframework.security.authentication.BadCredentialsException("Invalid refresh credential");
+        UserSession old = sessions.lockActive(TokenService.sha256(refreshToken), Instant.now())
+                .orElseThrow(() -> new org.springframework.security.authentication.BadCredentialsException("Invalid refresh credential"));
+        if (!old.getUser().isActive() || (blockDemo && old.getUser().getId() <= 11))
+            throw new org.springframework.security.authentication.BadCredentialsException("Invalid refresh credential");
         old.revoke();
-        User user = old.getUser();
-        create(user, userAgent, ipAddress);
-        return user;
+        return new Rotation(old.getUser(), create(old.getUser(), userAgent, ipAddress));
     }
 
-    @Transactional
-    public String rotateAndReturnToken(String refreshToken, String userAgent, String ipAddress) {
-        UserSession old = active(refreshToken);
-        old.revoke();
-        return create(old.getUser(), userAgent, ipAddress);
+    private String bounded(String value, int maximum) {
+        return value == null ? null : value.replaceAll("[\\r\\n\\p{Cntrl}]", " ").substring(0, Math.min(value.length(), maximum));
     }
 
     @Transactional
@@ -66,14 +70,4 @@ public class SessionService {
         sessions.findByIdAndUser_IdAndRevokedAtIsNull(id, user.getId()).ifPresent(UserSession::revoke);
     }
 
-    @Transactional(readOnly = true)
-    public User activeUser(String refreshToken) { return active(refreshToken).getUser(); }
-
-    private UserSession active(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) throw new BusinessException("Refresh token không hợp lệ hoặc đã hết hạn");
-        UserSession session = sessions.findByTokenHashAndRevokedAtIsNullAndExpiresAtAfter(TokenService.sha256(refreshToken), Instant.now())
-                .orElseThrow(() -> new BusinessException("Refresh token không hợp lệ hoặc đã hết hạn"));
-        session.touch();
-        return session;
-    }
 }

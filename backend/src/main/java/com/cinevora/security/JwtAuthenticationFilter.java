@@ -16,6 +16,7 @@ import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    @org.springframework.beans.factory.annotation.Value("${app.auth.block-demo-identities:false}") private boolean blockDemo;
     private final JwtService jwtService;
     private final UserRepository userRepository;
     public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) { this.jwtService = jwtService; this.userRepository = userRepository; }
@@ -26,7 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             if (jwtService.isValid(token)) {
                 String username = jwtService.extractUsername(token);
-                userRepository.findByUsernameIgnoreCase(username).filter(User::isActive).ifPresent(user -> {
+                userRepository.findByUsernameIgnoreCase(username).filter(User::isActive)
+                        .filter(user -> (!blockDemo || user.getId() > 11) && jwtService.matchesUser(token, user)).ifPresent(user -> {
                     var auth = new UsernamePasswordAuthenticationToken(user.getUsername(), null,
                             List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
                     SecurityContextHolder.getContext().setAuthentication(auth);

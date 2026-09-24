@@ -30,6 +30,7 @@ public class ProductionConfigurationGuard {
             if ("DEBUG".equalsIgnoreCase(level) || "TRACE".equalsIgnoreCase(level)) fail("Verbose logging cannot be enabled in prod");
         }
         if (Arrays.asList(env.getActiveProfiles()).contains("dev")) fail("Do not combine prod and dev profiles");
+        if (!env.getProperty("app.auth.cookie-secure", Boolean.class, true)) fail("Production refresh cookies require Secure");
         String secret = required(env, "app.jwt.secret");
         String lower = secret.toLowerCase(Locale.ROOT);
         if (secret.getBytes(StandardCharsets.UTF_8).length < 48 || secret.chars().distinct().count() < 16

@@ -30,7 +30,7 @@ public class AccountService {
         User user = current(username);
         if (!encoder.matches(request.currentPassword(), user.getPassword())) throw new BusinessException("Mật khẩu hiện tại không đúng");
         if (encoder.matches(request.newPassword(), user.getPassword())) throw new BusinessException("Mật khẩu mới phải khác mật khẩu hiện tại");
-        user.setPassword(encoder.encode(request.newPassword())); sessions.revokeAll(user);
+        user.setPassword(encoder.encode(request.newPassword())); user.invalidateCredentials(); sessions.revokeAll(user);
     }
     @Transactional(readOnly = true) public List<AccountDtos.SessionResponse> sessions(String username) { return this.sessions.list(current(username)); }
     @Transactional public void revokeSession(String username, Long id) { this.sessions.revoke(current(username), id); }

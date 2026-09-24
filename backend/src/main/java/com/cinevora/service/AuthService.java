@@ -18,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class AuthService {
+    @org.springframework.beans.factory.annotation.Value("${app.auth.block-demo-identities:false}") private boolean blockDemo;
     private final UserRepository users;
     private final PasswordEncoder encoder;
     private final JwtService jwt;
@@ -39,9 +40,9 @@ public class AuthService {
     @Transactional
     public AuthDtos.AuthResponse login(AuthDtos.LoginRequest request, String userAgent, String ipAddress) {
         String key = "login:" + request.username().trim().toLowerCase();
-        if (!limiter.allow(key)) throw new BusinessException("Quá nhiều lần đăng nhập thất bại, hãy thử lại sau");
+        if (!limiter.allow(key)) throw new com.cinevora.exception.RateLimitException();
         User user = users.findByUsernameIgnoreCase(request.username().trim()).orElse(null);
-        if (user == null || !user.isActive() || !encoder.matches(request.password(), user.getPassword()))
+        if (user == null || (blockDemo && user.getId() != null && user.getId() <= 11) || !user.isActive() || !encoder.matches(request.password(), user.getPassword()))
             throw new BusinessException("Sai tên đăng nhập hoặc mật khẩu!");
         limiter.reset(key);
         return issue(user, userAgent, ipAddress, null);
@@ -70,8 +71,9 @@ public class AuthService {
 
     @Transactional
     public AuthDtos.AuthResponse refresh(AuthDtos.RefreshRequest request, String userAgent, String ipAddress) {
-        User user = sessions.activeUser(request.refreshToken());
-        String nextToken = sessions.rotateAndReturnToken(request.refreshToken(), userAgent, ipAddress);
+        SessionService.Rotation rotation = sessions.consume(request.refreshToken(), userAgent, ipAddress);
+        User user = rotation.user();
+        String nextToken = rotation.token();
         return new AuthDtos.AuthResponse(jwt.generate(user), "Bearer", jwt.getExpirationSeconds(), UserResponse.from(user), nextToken, user.isEmailVerified(), null);
     }
 
@@ -81,7 +83,7 @@ public class AuthService {
     @Transactional
     public AuthDtos.GenericTokenResponse forgotPassword(AuthDtos.ForgotPasswordRequest request) {
         String key = "reset:" + request.email().trim().toLowerCase();
-        if (!limiter.allow(key)) return new AuthDtos.GenericTokenResponse("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.", null);
+        if (!limiter.allow(key)) throw new com.cinevora.exception.RateLimitException();
         String developmentToken = null;
         User user = users.findByEmailIgnoreCase(request.email().trim()).orElse(null);
         if (user != null && user.isActive()) {
@@ -97,6 +99,7 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException("Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn"));
         User user = reset.getUser();
         user.setPassword(encoder.encode(request.newPassword()));
+        user.invalidateCredentials();
         reset.markUsed();
         sessions.revokeAll(user);
         limiter.reset("reset:" + user.getEmail().toLowerCase());

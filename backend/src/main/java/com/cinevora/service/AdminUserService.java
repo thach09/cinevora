@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AdminUserService {
+    @org.springframework.beans.factory.annotation.Value("${app.auth.block-demo-identities:false}") private boolean blockDemo;
     private final UserRepository users;
     private final SessionService sessions;
 
@@ -43,8 +44,9 @@ public class AdminUserService {
         if (user.getUsername().equalsIgnoreCase(actorUsername) && !request.active()) {
             throw new BusinessException("Không thể tự vô hiệu hóa tài khoản admin hiện tại");
         }
+        if (blockDemo && user.getId() <= 11 && request.active()) throw new BusinessException("Demo identities cannot be enabled in production");
         user.setActive(request.active());
-        if (!request.active()) sessions.revokeAll(user);
+        if (!request.active()) { user.invalidateCredentials(); sessions.revokeAll(user); }
         return UserResponse.from(user);
     }
 }

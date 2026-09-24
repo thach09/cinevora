@@ -8,6 +8,9 @@ import java.time.Instant;
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "security_version", nullable = false) private long securityVersion;
+    public long getSecurityVersion() { return securityVersion; }
+    public void invalidateCredentials() { securityVersion++; }
     @Column(nullable = false, length = 50, unique = true) private String username;
     @Column(nullable = false, length = 100, unique = true) private String email;
     @Column(nullable = false, length = 255) private String password;
