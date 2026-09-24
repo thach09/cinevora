@@ -4,6 +4,7 @@ import { accountApi, getApiError, profileApi } from '../lib/api'
 import { useAuthStore } from '../store/authStore'
 import { Button, Field, Input, QueryError, Spinner } from '../components/ui'
 import { useToast } from '../components/ToastProvider'
+import type { Profile } from '../types/api'
 
 export function AccountPage() {
   const client = useQueryClient(); const { push } = useToast(); const userId = useAuthStore((state) => state.user?.id); const setActiveProfile = useAuthStore((state) => state.setActiveProfile); const activeProfileId = useAuthStore((state) => state.activeProfileId)
@@ -12,7 +13,7 @@ export function AccountPage() {
   useEffect(() => { if (me.data) { setFullName(me.data.fullName); setEmail(me.data.email) } }, [me.data])
   const update = useMutation({ mutationFn: () => accountApi.update({ fullName, email }), onSuccess: (data) => { client.setQueryData(['account', userId], data); push('Profile updated.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   const password = useMutation({ mutationFn: () => accountApi.changePassword({ currentPassword, newPassword }), onSuccess: () => { setCurrentPassword(''); setNewPassword(''); push('Password updated. Other sessions were revoked.', 'success'); client.invalidateQueries({ queryKey: ['sessions'] }) }, onError: (error) => push(getApiError(error), 'error') })
-  const create = useMutation({ mutationFn: () => profileApi.create({ name: newProfile }), onSuccess: (profile) => { setNewProfile(''); client.invalidateQueries({ queryKey: ['profiles'] }); setActiveProfile(profile.id); push('Profile created.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
+  const create = useMutation({ mutationFn: () => profileApi.create({ name: newProfile }), onSuccess: (profile) => { setNewProfile(''); client.setQueryData<Profile[]>(['profiles', userId], (current) => current && !current.some((item) => item.id === profile.id) ? [...current, profile] : current); client.invalidateQueries({ queryKey: ['profiles'] }); setActiveProfile(profile.id); push('Profile created.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   const remove = useMutation({ mutationFn: profileApi.remove, onSuccess: () => { client.invalidateQueries({ queryKey: ['profiles'] }); push('Profile removed.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   const revoke = useMutation({ mutationFn: accountApi.revokeSession, onSuccess: () => { client.invalidateQueries({ queryKey: ['sessions'] }); push('Session revoked.', 'success') }, onError: (error) => push(getApiError(error), 'error') })
   if (me.isLoading || profiles.isLoading || sessions.isLoading) return <Spinner label="Loading account" />

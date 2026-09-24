@@ -1,3 +1,4 @@
+import { csrfPost } from './security-helpers'
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test'
 
 const API_BASE = process.env.CINEVORA_API_URL || 'http://localhost:8080/api/v1'
@@ -47,7 +48,7 @@ async function logout(page: Page) {
 }
 
 async function apiLogin(request: APIRequestContext, credentials: { username: string; password: string }) {
-  const response = await request.post(`${API_BASE}/auth/login`, { data: credentials })
+  const response = await csrfPost(request, `${API_BASE}/auth/login`, { data: credentials })
   expect(response.ok()).toBeTruthy()
   return (await response.json()).data as { token: string }
 }
@@ -71,7 +72,7 @@ async function createMovieFixture(request: APIRequestContext, title: string, cat
       releaseYear: 2026,
       rating: 8.8,
       durationMinutes: 95,
-      videoUrl: 'data:video/mp4;base64,AAAA',
+      videoUrl: '/media/security-test-video.mp4',
       trailerUrl,
       description: 'Created by the Phase 4 browser integration suite.',
     },
@@ -86,6 +87,9 @@ test.describe('Cinevora Phase 4 final integration', () => {
     // Real trailer playback remains a separate deployed-browser verification gate.
     await page.route('https://www.youtube-nocookie.com/embed/**', (route) => route.fulfill({
       contentType: 'text/html', body: '<!doctype html><title>Trailer test fixture</title>',
+    }))
+    await page.route('**/media/security-test-video.mp4', (route) => route.fulfill({
+      status: 200, contentType: 'video/mp4', body: Buffer.alloc(0),
     }))
   })
 

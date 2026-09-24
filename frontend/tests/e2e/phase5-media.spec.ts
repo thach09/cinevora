@@ -1,3 +1,4 @@
+import { csrfPost } from './security-helpers'
 import { expect, test } from '@playwright/test'
 
 const API = process.env.CINEVORA_API_URL || 'http://localhost:18086/api/v1'
@@ -7,7 +8,7 @@ const customer = { username: process.env.CINEVORA_CUSTOMER_USERNAME || 'thiettha
 
 test('poster upload is visible to customers after reload, replacement and removal', async ({ page, request }) => {
   test.skip(!local && process.env.CINEVORA_ALLOW_QA_MUTATIONS !== 'true', 'Explicit demo deployment required')
-  const auth = (await (await request.post(`${API}/auth/login`, { data: admin })).json()).data
+  const auth = (await (await csrfPost(request, `${API}/auth/login`, { data: admin })).json()).data
   const headers = { Authorization: `Bearer ${auth.token}` }
   const title = `Phase5 Poster ${Date.now()}`
   const created = await request.post(`${API}/movies`, { headers, data: { title, categoryId: 1, director: 'QA', actors: 'QA', releaseYear: 2026, rating: 8 } })
@@ -68,6 +69,6 @@ test('poster upload is visible to customers after reload, replacement and remova
   } finally {
     await request.delete(`${API}/media/movies/${movieId}/poster`, { headers })
     await request.patch(`${API}/admin/movies/${movieId}/status`, { headers, data: { active: false } })
-    await request.post(`${API}/auth/logout`, { data: { refreshToken: auth.refreshToken } })
+    await csrfPost(request, `${API}/auth/logout`)
   }
 })

@@ -7,6 +7,15 @@ import { authApi, notificationApi, profileApi } from '../lib/api'
 import { initials } from "../lib/format";
 import { Button } from "./ui";
 
+function isSafeNotificationPath(value: string) {
+  try {
+    const url = new URL(value, window.location.origin);
+    return value.startsWith("/") && !value.startsWith("//") && url.origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 const customerLinks = [
   ["Browse", "/browse", "⌂"],
   ["Search", "/search", "⌕"],
@@ -32,7 +41,6 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const refreshToken = useAuthStore((state) => state.refreshToken)
   const activeProfileId = useAuthStore((state) => state.activeProfileId)
   const setActiveProfile = useAuthStore((state) => state.setActiveProfile)
   const queryClient = useQueryClient()
@@ -64,7 +72,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
   const signOut = () => {
     queryClient.clear()
-    void authApi.logout(refreshToken).finally(() => { logout(); navigate("/login"); })
+    void authApi.logout().finally(() => { logout(); navigate("/login"); })
   };
 
   return (
@@ -215,7 +223,7 @@ function NotificationCenter() {
   const inbox = useQuery({ queryKey: ['notifications'], queryFn: notificationApi.inbox, staleTime: 30_000, initialData: { items: [], unreadCount: 0 } })
   const markRead = useMutation({ mutationFn: notificationApi.markRead, onSuccess: () => client.invalidateQueries({ queryKey: ['notifications'] }) })
   const markAll = useMutation({ mutationFn: notificationApi.markAllRead, onSuccess: () => client.invalidateQueries({ queryKey: ['notifications'] }) })
-  return <div className="notification-center"><button type="button" className="notification-button" aria-label={`Notifications${inbox.data?.unreadCount ? `, ${inbox.data.unreadCount} unread` : ''}`} aria-expanded={open} onClick={() => setOpen((current) => !current)}><span aria-hidden="true">♧</span>{Boolean(inbox.data?.unreadCount) && <span className="notification-badge">{inbox.data.unreadCount > 9 ? '9+' : inbox.data.unreadCount}</span>}</button>{open && <div className="notification-popover" role="dialog" aria-label="Notifications"><div className="flex items-center justify-between gap-4 border-b border-slate-800 px-4 py-3"><strong className="text-sm text-white">Notifications</strong><button type="button" className="text-xs text-pink-200 hover:text-white" onClick={() => markAll.mutate()}>Mark all read</button></div><div className="max-h-80 overflow-y-auto">{inbox.data?.items.length ? inbox.data.items.map((item) => <button type="button" key={item.id} className={`notification-item ${item.read ? '' : 'notification-item-unread'}`} onClick={() => { if (!item.read) markRead.mutate(item.id); if (item.actionUrl) window.location.assign(item.actionUrl) }}><span className="block font-semibold text-white">{item.title}</span><span className="mt-1 block text-xs leading-5 text-slate-400">{item.body}</span></button>) : <p className="px-4 py-6 text-center text-xs text-slate-500">You are all caught up.</p>}</div></div>}</div>
+  return <div className="notification-center"><button type="button" className="notification-button" aria-label={`Notifications${inbox.data?.unreadCount ? `, ${inbox.data.unreadCount} unread` : ''}`} aria-expanded={open} onClick={() => setOpen((current) => !current)}><span aria-hidden="true">♧</span>{Boolean(inbox.data?.unreadCount) && <span className="notification-badge">{inbox.data.unreadCount > 9 ? '9+' : inbox.data.unreadCount}</span>}</button>{open && <div className="notification-popover" role="dialog" aria-label="Notifications"><div className="flex items-center justify-between gap-4 border-b border-slate-800 px-4 py-3"><strong className="text-sm text-white">Notifications</strong><button type="button" className="text-xs text-pink-200 hover:text-white" onClick={() => markAll.mutate()}>Mark all read</button></div><div className="max-h-80 overflow-y-auto">{inbox.data?.items.length ? inbox.data.items.map((item) => <button type="button" key={item.id} className={`notification-item ${item.read ? '' : 'notification-item-unread'}`} onClick={() => { if (!item.read) markRead.mutate(item.id); if (item.actionUrl && isSafeNotificationPath(item.actionUrl)) window.location.assign(item.actionUrl) }}><span className="block font-semibold text-white">{item.title}</span><span className="mt-1 block text-xs leading-5 text-slate-400">{item.body}</span></button>) : <p className="px-4 py-6 text-center text-xs text-slate-500">You are all caught up.</p>}</div></div>}</div>
 }
 
 function SideLink({

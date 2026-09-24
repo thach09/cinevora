@@ -28,7 +28,6 @@ export interface AuthResponse {
   tokenType: string
   expiresInSeconds: number
   user: User
-  refreshToken: string
   emailVerified: boolean
   emailVerificationToken?: string | null
 }

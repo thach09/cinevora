@@ -1,3 +1,4 @@
+import { csrfPost } from './security-helpers'
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 
 const API_BASE = process.env.CINEVORA_API_URL || 'http://localhost:8080/api/v1'
@@ -6,7 +7,7 @@ const ADMIN = { username: 'admin', password: DEMO_PASSWORD }
 const CUSTOMER = { username: 'thietthach09', password: DEMO_PASSWORD }
 
 async function login(request: APIRequestContext, credentials: { username: string; password: string }) {
-  const response = await request.post(`${API_BASE}/auth/login`, { data: credentials })
+  const response = await csrfPost(request, `${API_BASE}/auth/login`, { data: credentials })
   expect(response.ok()).toBeTruthy()
   return (await response.json()).data as { token: string }
 }
@@ -22,6 +23,9 @@ async function loginInBrowser(page: Page, credentials: { username: string; passw
 test('trailer playback is separate from Watch Now persistence', async ({ page, request }) => {
   await page.route('https://www.youtube-nocookie.com/embed/**', (route) => route.fulfill({
     contentType: 'text/html', body: '<!doctype html><title>Trailer test fixture</title>',
+  }))
+  await page.route('**/media/security-test-video.mp4', (route) => route.fulfill({
+    status: 200, contentType: 'video/mp4', body: Buffer.alloc(0),
   }))
   const adminAuth = await login(request, ADMIN)
   const headers = { Authorization: `Bearer ${adminAuth.token}` }
@@ -39,7 +43,7 @@ test('trailer playback is separate from Watch Now persistence', async ({ page, r
         releaseYear: 2026,
         rating: 8.5,
         durationMinutes: 95,
-        videoUrl: 'data:video/mp4;base64,AAAA',
+        videoUrl: '/media/security-test-video.mp4',
         trailerUrl: 'https://www.youtube.com/watch?v=JfVOs4VSpmA',
         thumbnailUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Avengers_Endgame_logo.svg',
         description: 'Automated playback separation test fixture.',

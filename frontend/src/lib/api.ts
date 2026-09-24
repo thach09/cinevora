@@ -10,6 +10,8 @@ import type {
 
 export const api = axios.create({
   baseURL: apiBaseUrl,
+  withCredentials: true,
+  timeout: 20_000,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -27,27 +29,36 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const request = error.config as typeof error.config & { _retry?: boolean } | undefined
-    const isRefresh = request?.url?.includes('/auth/refresh') || request?.url?.includes('/auth/login')
-    if (error.response?.status !== 401 || !request || request._retry || isRefresh || !useAuthStore.getState().refreshToken) {
+    const isRefresh = request?.url?.startsWith('/auth/')
+    if (error.response?.status !== 401 || !request || request._retry || isRefresh || !useAuthStore.getState().token) {
       if (error.response?.status === 401 && isRefresh) useAuthStore.getState().logout()
       return Promise.reject(error)
     }
     request._retry = true
-    refreshPromise ||= authApi.refresh(useAuthStore.getState().refreshToken!).then((auth) => { useAuthStore.getState().setAuth(auth); return auth.token }).finally(() => { refreshPromise = null })
+    refreshPromise ||= authApi.refresh().then((auth) => { useAuthStore.getState().setAuth(auth); return auth.token }).finally(() => { refreshPromise = null })
     return refreshPromise.then((token) => { request.headers.Authorization = `Bearer ${token}`; return api(request) }).catch((refreshError) => { useAuthStore.getState().logout(); return Promise.reject(refreshError) })
   },
 )
 
 const dataOf = async <T>(request: Promise<{ data: ApiResponse<T> }>) => (await request).data.data
 
+const csrfPost = async <T>(path: string, payload?: unknown) => {
+  const csrf = await dataOf<{ token: string; headerName: string }>(api.get('/auth/csrf'))
+  return dataOf<T>(api.post(path, payload, { headers: { [csrf.headerName]: csrf.token } }))
+}
 export const authApi = {
-  login: (payload: LoginRequest) => dataOf<AuthResponse>(api.post('/auth/login', payload)),
-  register: (payload: RegisterRequest) => dataOf<AuthResponse>(api.post('/auth/register', payload)),
-  refresh: (refreshToken: string) => dataOf<AuthResponse>(api.post('/auth/refresh', { refreshToken })),
-  logout: (refreshToken: string | null) => dataOf<void>(api.post('/auth/logout', { refreshToken })),
-  forgotPassword: (email: string) => dataOf<{ message: string; developmentToken?: string | null }>(api.post('/auth/forgot-password', { email })),
-  resetPassword: (token: string, newPassword: string) => dataOf<void>(api.post('/auth/reset-password', { token, newPassword })),
-  verifyEmail: (token: string) => dataOf<void>(api.post('/auth/verify-email', { token })),
+  restore: async () => {
+    const csrf = await dataOf<{ token: string; headerName: string; hasSession: boolean }>(api.get('/auth/csrf'))
+    if (!csrf.hasSession) return null
+    return dataOf<AuthResponse>(api.post('/auth/refresh', undefined, { headers: { [csrf.headerName]: csrf.token } }))
+  },
+  login: (payload: LoginRequest) => csrfPost<AuthResponse>('/auth/login', payload),
+  register: (payload: RegisterRequest) => csrfPost<AuthResponse>('/auth/register', payload),
+  refresh: () => csrfPost<AuthResponse>('/auth/refresh'),
+  logout: () => csrfPost<void>('/auth/logout'),
+  forgotPassword: (email: string) => csrfPost<{ message: string; developmentToken?: string | null }>('/auth/forgot-password', { email }),
+  resetPassword: (token: string, newPassword: string) => csrfPost<void>('/auth/reset-password', { token, newPassword }),
+  verifyEmail: (token: string) => csrfPost<void>('/auth/verify-email', { token }),
 }
 
 export const accountApi = {
