@@ -19,14 +19,16 @@ public class ProfileService {
 
     @Transactional(readOnly = true) public List<ProfileDtos.Response> list(String username) { return profiles.findByUser_IdOrderByCreatedAtAsc(current(username).getId()).stream().map(ProfileDtos.Response::from).toList(); }
     @Transactional public ProfileDtos.Response create(String username, ProfileDtos.Request request) {
-        User user = current(username);
+        // Serialize the count and insert per account across all application instances.
+        User user = users.findByUsernameForProfileCreation(username).filter(User::isActive)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
         if (profiles.countByUser_Id(user.getId()) >= 5) throw new BusinessException("Mỗi tài khoản chỉ có tối đa 5 profile");
         if (profiles.findByUser_IdOrderByCreatedAtAsc(user.getId()).stream().anyMatch(p -> p.getName().equalsIgnoreCase(request.name().trim()))) throw new BusinessException("Tên profile đã tồn tại");
-        Profile profile = new Profile(user, request.name().trim(), false); profile.setAvatarUrl(clean(request.avatarUrl()));
+        Profile profile = new Profile(user, request.name().trim(), false); profile.setAvatarUrl(MediaUrlPolicy.validate(request.avatarUrl()));
         return ProfileDtos.Response.from(profiles.save(profile));
     }
     @Transactional public ProfileDtos.Response update(String username, Long id, ProfileDtos.Request request) {
-        Profile profile = owned(username, id); profile.setName(request.name().trim()); profile.setAvatarUrl(clean(request.avatarUrl())); return ProfileDtos.Response.from(profile);
+        Profile profile = owned(username, id); profile.setName(request.name().trim()); profile.setAvatarUrl(MediaUrlPolicy.validate(request.avatarUrl())); return ProfileDtos.Response.from(profile);
     }
     @Transactional public void delete(String username, Long id) {
         Profile profile = owned(username, id);

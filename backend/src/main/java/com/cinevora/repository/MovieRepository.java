@@ -34,6 +34,15 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
                             @Param("includeInactive") boolean includeInactive, Pageable pageable);
     long countByActiveTrue();
     long countByCategory_IdAndActiveTrue(Long categoryId);
+    @Modifying(flushAutomatically = true, clearAutomatically = false)
+    @Query("update Movie m set m.views = m.views + 1 where m.id = :id")
+    int incrementViews(@Param("id") Long id);
+    @Modifying(flushAutomatically = true, clearAutomatically = false)
+    @Query("update Movie m set m.favouritesCount = m.favouritesCount + 1 where m.id = :id")
+    int incrementFavourites(@Param("id") Long id);
+    @Modifying(flushAutomatically = true, clearAutomatically = false)
+    @Query("update Movie m set m.favouritesCount = m.favouritesCount - 1 where m.id = :id and m.favouritesCount > 0")
+    int decrementFavourites(@Param("id") Long id);
     @Query("select m from Movie m join fetch m.category where m.active = true order by m.views desc")
     Page<Movie> findTrending(Pageable pageable);
     @Query("select distinct m from Movie m join fetch m.category where m.active = true")
