@@ -35,6 +35,8 @@ CONTEXT.md
 !.env.example
 .tmp/
 **/uploads/
+legacy-cli/exports/
+**/test-results-*/
 .vercel/
 
 # Output cua cac cong cu JDK trong tools/ (class da build, jar verify)
