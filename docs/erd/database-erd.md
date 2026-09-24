@@ -358,7 +358,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/cinevora_db
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD}}
   jpa:
     hibernate:
       ddl-auto: validate        # BẮT BUỘC - schema do Flyway quản lý, Hibernate chỉ kiểm tra
@@ -515,7 +515,7 @@ bằng một test** để phòng khi ai đó vô tình đổi cost/encoder:
 void seedPasswordHash_mustBeVerifiableBySpringSecurity() {
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     String seedHash = "$2a$10$RSRK4WMinzwDDi6hcY19lOHClSIggDv1DUOUB.3VEKnFQss0L4CV6";
-    assertThat(encoder.matches("Cinevora@2026", seedHash)).isTrue();
+    assertThat(encoder.matches(System.getenv("DEMO_PASSWORD"), seedHash)).isTrue();
     assertThat(encoder.matches("sai-mat-khau", seedHash)).isFalse();
 }
 ```
@@ -557,7 +557,7 @@ Và "yêu thích" là: `movies.favourites_count` tăng/giảm **cùng lúc** v�
 - [ ] `User.role` dùng `@Enumerated(EnumType.STRING)` (hoặc Single Table discriminator tương đương) và khớp `VARCHAR(20)`
 - [ ] `watchlist` / `favourites` / `continue_watching` dùng `@EmbeddedId` + `equals`/`hashCode`
 - [ ] `watch_history` **không** có unique `(user_id, movie_id)`
-- [ ] Đăng nhập `admin` / `Cinevora@2026` thành công
+- [ ] Đăng nhập `admin` bằng credential được cấp qua môi trường local thành công
 - [ ] Đăng nhập `ADMIN` (viết hoa) cũng thành công
 - [ ] Xem 1 phim → `movies.views` tăng **và** có dòng mới trong `watch_history`
 - [ ] Test BCrypt parity ở §6.5 PASS

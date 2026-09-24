@@ -39,9 +39,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 public final class SpringBcryptParityCheck {
 
-    /** Mat khau demo (giong .env.example va docs/database/seed-mapping.md). */
-    private static final String DEMO_PASSWORD = "Cinevora@2026";
-
     /** Bat ky chuoi $2a$ / $2b$ / $2y$ + cost 2 chu so + 53 ky tu base64. */
     private static final Pattern BCRYPT_HASH = Pattern.compile("\\$2[aby]\\$\\d\\d\\$[./A-Za-z0-9]{53}");
 
@@ -56,6 +53,11 @@ public final class SpringBcryptParityCheck {
         System.out.println("file    : " + sqlFile.toAbsolutePath());
         System.out.println("encoder : " + BCryptPasswordEncoder.class.getName());
         System.out.println();
+
+        String demoPassword = System.getenv("DEMO_PASSWORD");
+        if (demoPassword == null || demoPassword.isBlank()) {
+            throw new IllegalStateException("DEMO_PASSWORD must be supplied through the local environment");
+        }
 
         String sql = Files.readString(sqlFile, StandardCharsets.UTF_8);
         Set<String> hashes = new LinkedHashSet<>();
@@ -74,9 +76,9 @@ public final class SpringBcryptParityCheck {
         int failed = 0;
 
         for (String hash : hashes) {
-            boolean ok = encoder.matches(DEMO_PASSWORD, hash);
-            boolean wrongRejected = !encoder.matches(DEMO_PASSWORD + "x", hash)
-                    && !encoder.matches(DEMO_PASSWORD.toUpperCase(), hash);
+            boolean ok = encoder.matches(demoPassword, hash);
+            boolean wrongRejected = !encoder.matches(demoPassword + "x", hash)
+                    && !encoder.matches(demoPassword.toUpperCase(), hash);
             System.out.println((ok && wrongRejected ? "  [PASS] " : "  [FAIL] ") + hash
                     + "  matches=" + ok + " wrongRejected=" + wrongRejected);
             if (ok && wrongRejected) {
@@ -88,8 +90,8 @@ public final class SpringBcryptParityCheck {
 
         // Chieu nguoc lai: hash do Spring sinh ra cung phai tu kiem tra duoc
         // (bao dam kieu du lieu/kieu tien to giong nhau).
-        String springHash = encoder.encode(DEMO_PASSWORD);
-        boolean springRoundTrip = encoder.matches(DEMO_PASSWORD, springHash)
+        String springHash = encoder.encode(demoPassword);
+        boolean springRoundTrip = encoder.matches(demoPassword, springHash)
                 && springHash.startsWith("$2a$10$");
         System.out.println((springRoundTrip ? "  [PASS] " : "  [FAIL] ")
                 + "Spring tu sinh + tu kiem tra: " + springHash);

@@ -352,7 +352,7 @@ KET QUA: PASS - hash trong V2 xac thuc duoc bang BCryptPasswordEncoder
 
 ```powershell
 # 3. Chiều ngược lại: jBCrypt đọc được hash do Spring sinh ra
-& "$JDK\java.exe" -cp tools\build\classes PasswordHashGenerator --verify "Cinevora@2026" "<hash-do-spring-sinh>"
+& "$JDK\java.exe" -cp tools\build\classes PasswordHashGenerator --verify "$env:DEMO_PASSWORD" "<hash-do-spring-sinh>"
 # Kỳ vọng: ket qua : MATCH
 ```
 

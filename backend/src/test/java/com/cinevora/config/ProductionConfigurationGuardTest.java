@@ -38,7 +38,7 @@ class ProductionConfigurationGuardTest {
     }
 
     @Test void missingWeakAndKnownSecretsFailWithoutEchoingSecret() {
-        for (String value : new String[]{"", "short", "a".repeat(64), "dev-only-cinevora-secret-key-must-be-at-least-32-bytes-long-2026"}) {
+        for (String value : new String[]{"", "short", "a".repeat(64)}) {
             var failure = assertThrows(IllegalStateException.class, () -> ProductionConfigurationGuard.validate(valid().withProperty("app.jwt.secret", value)));
             if (!value.isEmpty()) assertFalse(failure.getMessage().contains(value));
         }

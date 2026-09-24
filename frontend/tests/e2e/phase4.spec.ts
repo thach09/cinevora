@@ -100,7 +100,7 @@ test.describe('Cinevora Phase 4 final integration', () => {
     await page.getByPlaceholder('Alex Morgan').fill('Phase Four Customer')
     await page.getByPlaceholder('alexmorgan').fill(`phase4_${stamp}`)
     await page.getByPlaceholder('alex@example.com').fill(`phase4_${stamp}@example.test`)
-    await page.getByPlaceholder('At least 8 characters').fill('Cinevora@2026')
+    await page.getByPlaceholder('At least 8 characters').fill(`Phase4-${stamp}-Aa9!`)
     await page.getByRole('button', { name: 'Create account', exact: true }).click()
     await page.waitForURL('**/browse')
     await expect(page.getByRole('heading', { name: 'A little something for everyone' })).toBeVisible()

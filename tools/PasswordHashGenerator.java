@@ -15,19 +15,19 @@ import org.mindrot.jbcrypt.BCrypt;
  *   & "$JDK\javac" -encoding UTF-8 -d tools\build\classes tools\lib\src\org\mindrot\jbcrypt\BCrypt.java tools\PasswordHashGenerator.java tools\SeedSqlGenerator.java
  *
  * Cach dung
- *   java -cp tools\build\classes PasswordHashGenerator "Cinevora@2026"
+ *   java -cp tools\build\classes PasswordHashGenerator "<local-password>"
  *       -> in ra hash BCrypt (cost 10) + tu kiem tra lai bang BCrypt.checkpw
- *   java -cp tools\build\classes PasswordHashGenerator "Cinevora@2026" 12
+ *   java -cp tools\build\classes PasswordHashGenerator "<local-password>" 12
  *       -> chi dinh cost (log rounds), mac dinh 10
- *   java -cp tools\build\classes PasswordHashGenerator --verify "Cinevora@2026" "$2a$10$..."
+ *   java -cp tools\build\classes PasswordHashGenerator --verify "$env:DEMO_PASSWORD" "$2a$10$..."
  *       -> kiem tra 1 hash co khop voi mat khau khong (exit code 0 = MATCH)
  *   java -cp tools\build\classes PasswordHashGenerator --self-test
  *       -> round-trip test cho cost 4..12 (chay duoc offline, khong can DB)
  *
  * LUU Y BAO MAT
  *   - Tool nay KHONG BAO GIO in ra mat khau plaintext, chi in hash.
- *   - Mat khau demo nam trong .env.example va docs/database/seed-mapping.md
- *     (day la mat khau demo co chu dich, khong phai secret that).
+ *   - Mat khau seed chi duoc doc tu tham so dong lenh hoac bien moi truong
+ *     local; khong ghi credential vao source code hay tai lieu commit.
  */
 public final class PasswordHashGenerator {
 
@@ -152,7 +152,8 @@ public final class PasswordHashGenerator {
 
     /** Round-trip test: hash roi kiem tra lai cho tung muc cost. */
     private static void selfTest() {
-        String[] samples = { "Cinevora@2026", "a", "", "Mat khau co dau tieng Viet: Do Thiet Thach" };
+        String positive = "sample-" + java.util.UUID.randomUUID();
+        String[] samples = { positive, "a", "", "Mat khau co dau tieng Viet: Do Thiet Thach" };
         int passed = 0;
         int failed = 0;
 
@@ -172,9 +173,9 @@ public final class PasswordHashGenerator {
         }
 
         // Mat khau sai KHONG duoc khop (kiem tra am)
-        String hash = BCrypt.hashpw("Cinevora@2026", BCrypt.gensalt(DEFAULT_COST));
-        boolean negativeOk = !BCrypt.checkpw("cinevora@2026", hash)
-                && !BCrypt.checkpw("Cinevora@2027", hash)
+        String hash = BCrypt.hashpw(positive, BCrypt.gensalt(DEFAULT_COST));
+        boolean negativeOk = !BCrypt.checkpw(positive + "-wrong", hash)
+                && !BCrypt.checkpw(positive.toUpperCase(), hash)
                 && !BCrypt.checkpw("", hash);
 
         System.out.println("--- PasswordHashGenerator --self-test ---");

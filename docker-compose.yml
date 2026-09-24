@@ -31,7 +31,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-cinevora_db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env or the shell}
       # Ep UTF8 + collation "C" de ket qua deterministic, khong phu thuoc
       # locale cua may host (PostgreSQL cho phep C collation voi UTF8).
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
@@ -73,7 +73,7 @@ services:
       FLYWAY_LOCATIONS: filesystem:/flyway/sql
       FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cinevora_db}
       FLYWAY_USER: ${POSTGRES_USER:-postgres}
-      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env or the shell}
     command: migrate
     networks:
       - cinevora-net
@@ -90,8 +90,8 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cinevora_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      JWT_SECRET: ${JWT_SECRET:-dev-only-cinevora-secret-key-must-be-at-least-32-bytes-long-2026}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env or the shell}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env or the shell}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8088}
       APP_AUTH_EXPOSE_DEVELOPMENT_TOKENS: "false"
       MEDIA_STORAGE: local

@@ -48,10 +48,7 @@ public final class SeedSqlGenerator {
     // ------------------------------------------------------------------
     // Cau hinh
     // ------------------------------------------------------------------
-    /** Mat khau demo. CHI dung de verify hash - khong bao gio ghi ra SQL. */
-    private static final String DEMO_PASSWORD = "Cinevora@2026";
-
-    /** Hash BCrypt sinh boi PasswordHashGenerator cho DEMO_PASSWORD. */
+    /** Hash BCrypt seed; the matching plaintext is supplied only at runtime. */
     private static final String DEMO_PASSWORD_HASH = "$2a$10$RSRK4WMinzwDDi6hcY19lOHClSIggDv1DUOUB.3VEKnFQss0L4CV6";
 
     /** Moc thoi gian goc - CO DINH de file SQL sinh ra xac dinh (deterministic). */
@@ -114,10 +111,11 @@ public final class SeedSqlGenerator {
         System.out.println("out sql    : " + outSql.toAbsolutePath());
         System.out.println();
 
-        // 0) Chan ngay tu dau neu hash demo chua duoc nap dung.
-        if (!BCrypt.checkpw(DEMO_PASSWORD, DEMO_PASSWORD_HASH)) {
+        String demoPassword = requiredDemoPassword();
+        // 0) Chan ngay tu dau neu hash seed chua duoc nap dung.
+        if (!BCrypt.checkpw(demoPassword, DEMO_PASSWORD_HASH)) {
             throw new IllegalStateException(
-                    "DEMO_PASSWORD_HASH khong khop voi DEMO_PASSWORD. Chay PasswordHashGenerator de sinh lai hash.");
+                    "DEMO_PASSWORD_HASH khong khop voi DEMO_PASSWORD. Dat DEMO_PASSWORD dung trong moi truong local.");
         }
         System.out.println("[OK] DEMO_PASSWORD_HASH khop voi mat khau demo (BCrypt.checkpw = true)");
 
@@ -142,6 +140,14 @@ public final class SeedSqlGenerator {
         writeUtf8NoBom(outMapping, buildMappingTsv(categories, movies, users, watchlist, favourites, history, progress));
 
         printSummary(categories, movies, users, watchlist, favourites, history, progress, outSql, outMapping, sql);
+    }
+
+    private static String requiredDemoPassword() {
+        String value = System.getenv("DEMO_PASSWORD");
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("DEMO_PASSWORD must be supplied through the local environment; it is never stored in source");
+        }
+        return value;
     }
 
     // ------------------------------------------------------------------

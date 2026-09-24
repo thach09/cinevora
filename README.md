@@ -1,6 +1,6 @@
 # 🎬 CINEVORA — Full-stack movie streaming platform
 
-> Cinevora đã tiến hóa từ ứng dụng CLI Java thuần thành hệ thống portfolio full-stack: Spring Boot 3.4 / Java 21, PostgreSQL 16 + Flyway, React 18 + Vite + TypeScript, JWT, Docker Compose và GitHub Actions.
+> Cinevora đã tiến hóa từ ứng dụng CLI Java thuần thành hệ thống portfolio full-stack: Spring Boot 3.5.16 / Java 21, PostgreSQL 16 + Flyway, React 18 + Vite + TypeScript, JWT, Docker Compose và GitHub Actions.
 
 [![Backend CI](https://github.com/thach09/cinevora/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/backend-ci.yml)
 [![Frontend CI](https://github.com/thach09/cinevora/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/thach09/cinevora/actions/workflows/frontend-ci.yml)
@@ -8,7 +8,7 @@
 
 ## Trạng thái hiện tại
 
-Backend và frontend đã được kiểm thử local bằng Docker Compose; database sạch chạy Flyway V1–V9; browser E2E đạt 7/7; poster upload có validation và adapter S3-compatible; production cloud chưa được bật vì chưa có tài khoản/credentials. Xem [báo cáo Phase 5](docs/verification/PHASE_5_DEPLOYMENT_MASTER_REPORT.md), [ADR hosting](docs/adr/ADR_PHASE_5_HOSTING.md) và [deployment runbook](docs/deployment/DEPLOYMENT_RUNBOOK.md).
+Backend và frontend đã được kiểm thử local bằng Docker Compose; database sạch chạy Flyway V1–V10; browser E2E đạt 7/7 và auth-topology gate đạt 1/1; poster upload có validation và adapter S3-compatible. Sáu lỗi từ audit độc lập đã được sửa và tái hiện lại thành công; trạng thái hiện tại là **local release candidate verified, public production not verified**. Production cloud chưa được xác minh vì chưa có tài khoản/domain/credentials. Xem [báo cáo remediation](docs/verification/FINAL_REMEDIATION_REPORT.md), [báo cáo audit](docs/verification/FINAL_INDEPENDENT_QA_SECURITY_AUDIT.md) và [deployment runbook](docs/deployment/DEPLOYMENT_RUNBOOK.md).
 
 ## Chạy full-stack local
 
@@ -18,7 +18,7 @@ docker compose up --build
 
 Frontend: `http://localhost:8088` · API: `http://localhost:8080` · health: `http://localhost:8080/actuator/health`
 
-Copy `.env.example` to `.env` for local values. Production secrets are supplied through the cloud provider and must never be committed. `VITE_API_URL` is build-time configuration; changing it requires rebuilding the frontend image.
+Copy `.env.example` to `.env` for local values. Production secrets, including the one-time `BOOTSTRAP_ADMIN_*` values, are supplied through the cloud provider and must never be committed. `VITE_API_URL` is build-time configuration; changing it requires rebuilding the frontend. Secure auth cookies require frontend and API on the same site under controlled HTTPS hostnames; raw Vercel and Render/Railway provider domains are not a supported final pair.
 
 ## Repository history
 
@@ -258,10 +258,10 @@ java -cp out Main
 
 | Vai trò | Username | Password | Ghi chú |
 |:---|:---|:---|:---|
-| **Admin** | `admin` | `Cinevora@2026` | Toàn quyền quản trị |
-| **Customer** | `thietthach09` | `Cinevora@2026` | Có watchlist + favourites + history |
-| **Customer** | `messi10` | `Cinevora@2026` | Có watchlist + favourites + history |
-| **Customer** | 8 tài khoản còn lại | `Cinevora@2026` | Danh sách trống |
+| **Admin** | `admin` | supplied through local environment | Toàn quyền quản trị |
+| **Customer** | `thietthach09` | supplied through local environment | Có watchlist + favourites + history |
+| **Customer** | `messi10` | supplied through local environment | Có watchlist + favourites + history |
+| **Customer** | 8 tài khoản còn lại | supplied through local environment | Danh sách trống |
 
 > [!WARNING]
 > **Mật khẩu cũ của bản CLI đã bị loại bỏ hoàn toàn** khỏi hệ thống mới. Bản CLI (v1.0) lưu mật khẩu
@@ -269,8 +269,8 @@ java -cp out Main
 > những lý do chính phải chuyển sang kiến trúc full-stack. Hệ thống mới **chỉ** lưu BCrypt hash
 > (`$2a$10$…`, cost 10, đúng 60 ký tự) và không còn bất kỳ chuỗi plaintext nào.
 >
-> `Cinevora@2026` là mật khẩu **demo cố ý công khai** cho mục đích chấm bài — **bắt buộc đổi** khi
-> triển khai thật (xem Phase 5 trong lộ trình).
+> Mật khẩu demo chỉ được cấp qua `.env` local hoặc biến môi trường CI; repo không lưu hay công bố giá trị đó.
+> Production bootstrap dùng credential riêng từ secret manager và vô hiệu hóa các demo identity.
 >
 > Bản CLI trong `legacy-cli/` dùng bộ dữ liệu `legacy-cli/data/*.txt` — bộ này **đã bị xoá**
 > (ngày 2026-09-15, sau khi 8/8 PostgreSQL smoke test + ST9 offline PASS) vì chứa mật khẩu plaintext. Cần chạy lại CLI để

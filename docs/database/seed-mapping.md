@@ -42,14 +42,14 @@ có thể sinh lại bất cứ lúc nào.
 
 | Vai trò | Username | Mật khẩu | Ghi chú |
 |---|---|---|---|
-| ADMIN | `admin` | `Cinevora@2026` | Toàn quyền quản trị |
-| CUSTOMER | `thietthach09` | `Cinevora@2026` | Có watchlist + favourites + history |
-| CUSTOMER | `messi10` | `Cinevora@2026` | Có watchlist + favourites + history |
-| CUSTOMER | 8 tài khoản còn lại | `Cinevora@2026` | Danh sách trống |
+| ADMIN | `admin` | supplied through local environment | Toàn quyền quản trị |
+| CUSTOMER | `thietthach09` | supplied through local environment | Có watchlist + favourites + history |
+| CUSTOMER | `messi10` | supplied through local environment | Có watchlist + favourites + history |
+| CUSTOMER | 8 tài khoản còn lại | supplied through local environment | Danh sách trống |
 
 > [!IMPORTANT]
-> **Mọi tài khoản dùng chung 1 mật khẩu demo `Cinevora@2026`.** Đây là mật khẩu *cố ý công khai*
-> cho môi trường demo/chấm bài. Khi deploy thật (Phase 5) **bắt buộc** phải đổi.
+> Mật khẩu demo không được ghi trong repository. Cấp nó qua `DEMO_PASSWORD` trong `.env` local
+> hoặc secret của CI; production phải dùng bootstrap credential riêng và không bật demo identity.
 >
 > **Toàn bộ 11 mật khẩu cũ của CLI đã bị loại bỏ hoàn toàn** khỏi hệ thống mới — V2 chỉ chứa
 > BCrypt hash, không chứa plaintext. Các giá trị đó **không được chép lại ở bất kỳ đâu trong repo**
