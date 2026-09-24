@@ -8,8 +8,10 @@ import { formatNumber } from "../lib/format";
 import { Seo } from "../components/Seo";
 import { useAuthStore } from "../store/authStore";
 import { resolveMediaUrl } from "../lib/environment";
+import { useI18n } from "../lib/i18n";
 
 export function BrowseMoviePage() {
+  const { t, locale, categoryName } = useI18n();
   const [page, setPage] = useState(0);
   const navigate = useNavigate();
   const activeProfileId = useAuthStore((state) => state.activeProfileId);
@@ -33,30 +35,30 @@ export function BrowseMoviePage() {
     staleTime: 60_000,
   });
 
-  if (movies.isLoading) return <Spinner label="Curating your cinema" />;
+  if (movies.isLoading) return <Spinner label={t("browse.loading")} />;
   if (movies.isError) return <QueryError message={getApiError(movies.error)} />;
 
   const featured = trending.data?.content[0] || movies.data?.content[0];
   return (
     <div className="space-y-12">
       <Seo
-        title="Browse movies · Cinevora"
-        description="Browse Cinevora movies by genre, popularity and mood. Find a great story quickly with clear categories and poster-first discovery."
+        title={`${t("nav.browse")} · Cinevora`}
+        description={t("browse.fallbackDescription")}
       />
       <section className="hero-banner">
         <HeroArtwork movie={featured} />
         <div className="hero-copy">
-          <p className="eyebrow text-pink-200">Tonight's recommendation</p>
-          <h2>{featured?.title || "Find a film for every feeling."}</h2>
+          <p className="eyebrow text-pink-200">{t("browse.recommendation")}</p>
+          <h2>{featured?.title || t("browse.fallbackTitle")}</h2>
           <p className="hero-description">
             {featured?.description ||
-              "Explore a thoughtful catalogue of movies, hand-picked by your own curiosity."}
+              t("browse.fallbackDescription")}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button
               onClick={() => featured && navigate(`/movies/${featured.id}`)}
             >
-              Play details
+              {t("browse.details")}
             </Button>
             <Button
               variant="secondary"
@@ -66,7 +68,7 @@ export function BrowseMoviePage() {
                   ?.scrollIntoView({ behavior: "smooth" })
               }
             >
-              Explore catalogue
+              {t("browse.explore")}
             </Button>
           </div>
         </div>
@@ -74,11 +76,11 @@ export function BrowseMoviePage() {
           <div className="hero-meta">
             <span className="hero-score">★ {featured.rating.toFixed(1)}</span>
             <span>{featured.releaseYear}</span>
-            <span>{featured.categoryName}</span>
+            <span>{categoryName(featured.categoryName)}</span>
             {featured.durationMinutes && (
-              <span>{featured.durationMinutes} min</span>
+              <span>{t("common.minutes", { count: featured.durationMinutes })}</span>
             )}
-            <span>{formatNumber(featured.views)} views</span>
+            <span>{t("common.views", { count: formatNumber(featured.views, locale) })}</span>
           </div>
         )}
       </section>
@@ -86,19 +88,19 @@ export function BrowseMoviePage() {
       <section id="catalogue" className="space-y-6">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Popular in Cinevora</p>
-            <h2 className="section-title">A little something for everyone</h2>
+            <p className="eyebrow">{t("browse.popular")}</p>
+            <h2 className="section-title">{t("browse.catalogueTitle")}</h2>
           </div>
           <Link
             className="text-sm font-semibold text-pink-300 transition hover:text-pink-200"
             to="/search"
           >
-            Advanced search <span aria-hidden="true">-&gt;</span>
+            {t("browse.advanced")} <span aria-hidden="true">→</span>
           </Link>
         </div>
-        <div className="category-pills" aria-label="Browse categories">
+        <div className="category-pills" aria-label={t("browse.categories")}>
           <Link to="/browse" className="category-pill category-pill-active">
-            All titles
+            {t("browse.allTitles")}
           </Link>
           {categories.data?.map((category) => (
             <Link
@@ -106,7 +108,7 @@ export function BrowseMoviePage() {
               to={`/search?categoryId=${category.id}`}
               className="category-pill"
             >
-              {category.name}
+              {categoryName(category.name)}
             </Link>
           ))}
         </div>
@@ -114,8 +116,8 @@ export function BrowseMoviePage() {
           <MovieGrid movies={movies.data.content} />
         ) : (
           <EmptyState
-            title="The catalogue is quiet"
-            description="There are no active movies to show yet."
+            title={t("browse.emptyTitle")}
+            description={t("browse.emptyDescription")}
           />
         )}
       </section>
@@ -123,10 +125,10 @@ export function BrowseMoviePage() {
         <section className="space-y-6">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">For your profile</p>
-              <h2 className="section-title">Top picks for you</h2>
+              <p className="eyebrow">{t("browse.forProfile")}</p>
+              <h2 className="section-title">{t("browse.topPicks")}</h2>
             </div>
-            <span className="section-note">Updated from your taste</span>
+            <span className="section-note">{t("browse.tasteNote")}</span>
           </div>
           <MovieGrid movies={home.data.topPicks} />
         </section>
@@ -135,14 +137,14 @@ export function BrowseMoviePage() {
         <section className="space-y-6">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Pick up where you left off</p>
-              <h2 className="section-title">Continue watching</h2>
+              <p className="eyebrow">{t("library.continueEyebrow")}</p>
+              <h2 className="section-title">{t("browse.resume")}</h2>
             </div>
             <Link
               className="text-sm font-semibold text-pink-300 transition hover:text-pink-200"
               to="/continue-watching"
             >
-              View all <span aria-hidden="true">-&gt;</span>
+              {t("common.viewAll")} <span aria-hidden="true">→</span>
             </Link>
           </div>
           <MovieGrid
@@ -184,6 +186,7 @@ function HeroArtwork({
 }
 
 export function SearchPage() {
+  const { t, categoryName } = useI18n();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeProfileId = useAuthStore((state) => state.activeProfileId);
@@ -253,15 +256,15 @@ export function SearchPage() {
     <div className="space-y-8">
       <Seo
         title={
-          q ? `Search results for ${q} · Cinevora` : "Search movies · Cinevora"
+          q ? `${t("search.title")}: ${q} · Cinevora` : `${t("search.seo")} · Cinevora`
         }
-        description="Search Cinevora by title, director, actor or category with fast autocomplete and clear movie results."
+        description={t("search.copy")}
       />
       <div>
-        <p className="eyebrow">The whole catalogue</p>
-        <h2 className="section-title mt-1">Search and discover</h2>
+        <p className="eyebrow">{t("search.eyebrow")}</p>
+        <h2 className="section-title mt-1">{t("search.title")}</h2>
         <p className="mt-2 max-w-2xl text-slate-400">
-          Find a new favourite by title, category, rating, or just a feeling.
+          {t("search.copy")}
         </p>
       </div>
       <form className="search-panel" onSubmit={submit}>
@@ -291,8 +294,8 @@ export function SearchPage() {
           <input
             value={q}
             onChange={(event) => setQ(event.target.value)}
-            placeholder="Search by title, director, or actor"
-            aria-label="Search movies"
+            placeholder={t("search.placeholder")}
+            aria-label={t("search.inputLabel")}
           />
         </div>
         <select
@@ -302,12 +305,12 @@ export function SearchPage() {
             setCategoryId(event.target.value);
             setPage(0);
           }}
-          aria-label="Filter by category"
+          aria-label={t("search.categoryLabel")}
         >
-          <option value="">All categories</option>
+          <option value="">{t("search.allCategories")}</option>
           {categories.data?.map((category) => (
             <option key={category.id} value={category.id}>
-              {category.name}
+              {categoryName(category.name)}
             </option>
           ))}
         </select>
@@ -318,12 +321,12 @@ export function SearchPage() {
             setMinRating(event.target.value);
             setPage(0);
           }}
-          aria-label="Filter by rating"
+          aria-label={t("search.ratingLabel")}
         >
-          <option value="">Any rating</option>
-          <option value="7">7+ rating</option>
-          <option value="8">8+ rating</option>
-          <option value="9">9+ rating</option>
+          <option value="">{t("search.anyRating")}</option>
+          <option value="7">7+ {t("movie.rating")}</option>
+          <option value="8">8+ {t("movie.rating")}</option>
+          <option value="9">9+ {t("movie.rating")}</option>
         </select>
         <select
           className="input filter-input"
@@ -332,19 +335,19 @@ export function SearchPage() {
             setSort(event.target.value);
             setPage(0);
           }}
-          aria-label="Sort results"
+          aria-label={t("search.sortLabel")}
         >
-          <option value="popularity">Most popular</option>
-          <option value="rating">Top rated</option>
-          <option value="releaseYear">Newest</option>
-          <option value="title">Title A-Z</option>
+          <option value="popularity">{t("search.popular")}</option>
+          <option value="rating">{t("search.topRated")}</option>
+          <option value="releaseYear">{t("search.newest")}</option>
+          <option value="title">{t("search.titleAz")}</option>
         </select>
-        <Button type="submit">Search</Button>
+        <Button type="submit">{t("search.submit")}</Button>
       </form>
       {!q.trim() && (
         <div className="search-discovery-row">
           <div>
-            <span className="eyebrow">Recent searches</span>
+            <span className="eyebrow">{t("search.recent")}</span>
             <div className="search-chips">
               {recentSearches.data?.length ? (
                 recentSearches.data.slice(0, 6).map((entry) => (
@@ -362,13 +365,13 @@ export function SearchPage() {
                 ))
               ) : (
                 <span className="text-sm text-slate-500">
-                  Your recent searches will appear here.
+                  {t("search.recentEmpty")}
                 </span>
               )}
             </div>
           </div>
           <div>
-            <span className="eyebrow">Popular now</span>
+            <span className="eyebrow">{t("search.popularNow")}</span>
             <div className="search-chips">
               {popularSearches.data?.map((entry) => (
                 <button
@@ -388,7 +391,7 @@ export function SearchPage() {
         </div>
       )}
       {movies.isLoading ? (
-        <Spinner label="Searching the catalogue" />
+        <Spinner label={t("search.loading")} />
       ) : movies.isError ? (
         <QueryError message={getApiError(movies.error)} />
       ) : movies.data?.content.length ? (
@@ -402,8 +405,8 @@ export function SearchPage() {
         </>
       ) : (
         <EmptyState
-          title="No matches yet"
-          description="Try a broader search or remove one of the filters."
+          title={t("search.emptyTitle")}
+          description={t("search.emptyDescription")}
         />
       )}
     </div>
@@ -419,6 +422,7 @@ function Pagination({
   totalPages: number;
   onChange: (page: number) => void;
 }) {
+  const { t } = useI18n();
   if (totalPages < 2) return null;
   return (
     <div className="pagination">
@@ -427,17 +431,17 @@ function Pagination({
         disabled={page === 0}
         onClick={() => onChange(page - 1)}
       >
-        Previous
+        {t("common.previous")}
       </Button>
       <span className="text-slate-400">
-        Page <strong className="text-white">{page + 1}</strong> of {totalPages}
+        {t("common.pageOf", { page: page + 1, total: totalPages })}
       </span>
       <Button
         variant="ghost"
         disabled={page >= totalPages - 1}
         onClick={() => onChange(page + 1)}
       >
-        Next
+        {t("common.next")}
       </Button>
     </div>
   );

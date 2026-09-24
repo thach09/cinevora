@@ -38,9 +38,12 @@ a { text-decoration: none; }
   .page-content { @apply mx-auto min-h-[calc(100vh-142px)] max-w-[1680px] px-5 py-8 md:px-10 md:py-10 xl:px-14; }
   .footer { @apply flex flex-wrap justify-between gap-2 border-t border-slate-800/60 px-5 py-5 text-xs text-slate-600 md:px-10 xl:px-14; }
   .brand { @apply flex items-center gap-2.5 text-lg font-semibold tracking-tight text-white; }
-  .brand-mark { @apply flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-pink-300 to-violet-500 font-black text-white shadow-glow; }
+  .brand-mark { @apply flex h-8 w-8 items-center justify-center overflow-hidden rounded-[10px] bg-gradient-to-br from-pink-300 to-violet-500 font-black text-white shadow-glow; }
+  .brand-mark[data-logo-slot="cinevora"] { background-image: var(--cinevora-logo-image, linear-gradient(135deg, #f6a5cf, #8b5cf6)); }
+  .brand-monogram { @apply leading-none; }
   .avatar { @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pink-300/25 bg-pink-300/10 text-xs font-bold text-pink-100; }
-  .profile-select { @apply max-w-32 rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-2 text-xs text-slate-200 outline-none focus:border-pink-300/60; }
+  .profile-select, .locale-select { @apply max-w-32 rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-2 text-xs text-slate-200 outline-none transition focus:border-pink-300/60; }
+  .locale-select { @apply max-w-28; }
   .notification-center { @apply relative; }
   .notification-button { @apply relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/70 bg-slate-900/60 text-lg text-slate-300 transition hover:border-pink-300/50 hover:text-white; }
   .notification-badge { @apply absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-pink-400 px-1 text-[9px] font-bold text-slate-950; }
@@ -54,7 +57,7 @@ a { text-decoration: none; }
   .side-link-active .side-icon { @apply text-pink-300; }
   .sidebar-note { @apply rounded-2xl border border-pink-300/10 bg-gradient-to-br from-pink-400/10 to-cyan/5 p-4 text-sm leading-5 text-slate-300; }
   .surface { @apply rounded-2xl border border-slate-800/80 bg-panel/75 shadow-[0_20px_70px_rgba(0,0,0,.14)]; }
-  .btn { @apply inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-pink-300/40; }
+  .btn { @apply inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-pink-300/40 active:translate-y-px; }
   .btn-primary { @apply bg-pink-400 text-slate-950 shadow-glow hover:-translate-y-0.5 hover:bg-pink-300; }
   .btn-secondary { @apply border border-slate-700/90 bg-slate-800/70 text-slate-100 hover:-translate-y-0.5 hover:border-slate-500 hover:bg-slate-700; }
   .btn-ghost { @apply text-slate-300 hover:bg-slate-800/70 hover:text-white; }
@@ -65,6 +68,8 @@ a { text-decoration: none; }
   .input { @apply w-full rounded-xl border border-slate-700 bg-slate-950/50 px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-pink-300/70 focus:ring-2 focus:ring-pink-300/10; }
   .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-pink-300; }
   .section-heading { @apply flex flex-wrap items-end justify-between gap-4; }
+  .page-heading { @apply flex flex-wrap items-end justify-between gap-5; }
+  .page-heading-actions { @apply flex shrink-0 flex-wrap gap-2; }
   .section-title { @apply text-3xl font-semibold tracking-tight text-white md:text-4xl; }
   .category-pills { @apply flex gap-2 overflow-x-auto pb-2; scrollbar-width: thin; }
   .category-pill { @apply whitespace-nowrap rounded-full border border-slate-700 bg-slate-900/50 px-4 py-2 text-sm text-slate-400 transition duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:text-white; }
@@ -85,7 +90,7 @@ a { text-decoration: none; }
   .hero-score { @apply text-amber-300; }
 
   .movie-grid { @apply grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6; }
-  .movie-card { @apply block min-w-0; }
+  .movie-card { @apply block min-w-0 transition-transform duration-200 ease-out focus-visible:rounded-2xl; }
   .movie-poster { @apply relative aspect-[2/3] overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900 shadow-lg transition duration-300 group-hover:-translate-y-1 group-hover:border-pink-300/40 group-hover:shadow-glow; }
   .movie-poster img, .movie-poster .poster-fallback { @apply absolute inset-0 h-full w-full object-cover; }
   .movie-poster img { animation: image-reveal .35s ease-out both; }
@@ -119,6 +124,19 @@ a { text-decoration: none; }
   .detail-poster img, .detail-poster .poster-fallback { @apply absolute inset-0 h-full w-full object-cover; }
   .detail-poster img { animation: image-reveal .35s ease-out both; }
   .detail-copy { @apply self-center; }
+  .detail-meta { @apply flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[.15em] text-pink-200; }
+  .detail-meta span { @apply rounded-full border border-pink-300/15 bg-pink-300/5 px-3 py-1.5; }
+  .detail-engagement { @apply mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-400; }
+  .detail-engagement b { @apply text-amber-200; }
+  .detail-actions { @apply mt-8 space-y-5; }
+  .detail-action-label { @apply mb-2 text-[10px] font-bold uppercase tracking-[.18em] text-slate-500; }
+  .detail-layout { @apply grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,.75fr)]; }
+  .detail-section { @apply p-6 md:p-7; }
+  .cast-list { @apply mt-3 flex flex-wrap gap-2; }
+  .cast-list li { @apply rounded-full border border-slate-700 bg-slate-950/40 px-3 py-1.5 text-sm text-slate-300; }
+  .detail-facts { @apply mt-5 grid grid-cols-2 gap-x-5 gap-y-5; }
+  .detail-facts dt { @apply text-[10px] font-bold uppercase tracking-[.16em] text-slate-500; }
+  .detail-facts dd { @apply mt-1.5 text-sm font-medium text-slate-200; }
 
   .library-heading { @apply flex flex-wrap items-end justify-between gap-5; }
   .library-count { @apply rounded-full border border-slate-800 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-400; }
@@ -165,6 +183,28 @@ a { text-decoration: none; }
   .table-header, .table-row { @apply grid-cols-[1.1fr_1fr_auto]; }
   .table-header { @apply text-[10px] font-bold uppercase tracking-widest text-slate-600; }
   .table-row { @apply min-w-[620px]; }
+  .admin-workflow { @apply mt-5 divide-y divide-slate-800/80; }
+  .admin-workflow a { @apply flex items-center gap-4 py-4 transition hover:text-pink-100; }
+  .admin-workflow a > span { @apply text-xs font-bold text-pink-300; }
+  .admin-workflow strong, .admin-workflow small { @apply block; }
+  .admin-workflow strong { @apply text-sm text-slate-200; }
+  .admin-workflow small { @apply mt-1 text-xs text-slate-500; }
+  .admin-table-toolbar { @apply flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/70 px-5 py-5 md:px-6; }
+  .admin-table-header, .admin-table-row { @apply grid items-center gap-4 border-b border-slate-800/70 px-5 py-4 md:px-6; }
+  .admin-table-header { @apply text-[10px] font-bold uppercase tracking-widest text-slate-600; }
+  .admin-table-row:last-child { @apply border-b-0; }
+  .admin-table--categories .admin-table-header, .admin-table--categories .admin-table-row { grid-template-columns: minmax(150px,.75fr) minmax(180px,1.5fr) auto; }
+  .admin-table--media .admin-table-header, .admin-table--media .admin-table-row, .admin-table--archive .admin-table-header, .admin-table--archive .admin-table-row { grid-template-columns: minmax(170px,1.15fr) minmax(130px,1fr) 110px auto; }
+  .admin-table--users .admin-table-header, .admin-table--users .admin-table-row { grid-template-columns: minmax(220px,1.5fr) minmax(120px,.65fr) auto; }
+  .admin-table-description { @apply line-clamp-2 text-sm leading-5 text-slate-400; }
+  .admin-table-actions { @apply flex flex-wrap justify-end gap-2; }
+  .admin-list-toolbar { @apply flex flex-wrap items-end justify-between gap-4; }
+  .admin-list-toolbar .search-input-wrap { @apply w-full max-w-xl; }
+  .admin-movie-grid { @apply grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4; }
+  .admin-movie-card { @apply rounded-2xl border border-slate-800/80 bg-panel/75 p-4 shadow-[0_20px_70px_rgba(0,0,0,.1)]; }
+  .admin-movie-card .movie-poster { @apply max-h-64; }
+  .admin-movie-card-meta { @apply mt-3 flex items-center justify-between gap-3 text-xs text-slate-500; }
+  .admin-movie-card .admin-table-actions { @apply mt-4 justify-stretch; }
 
   .toast { @apply pointer-events-auto flex items-center rounded-xl border px-4 py-3 text-sm shadow-2xl backdrop-blur; animation: toast-in .25s ease-out; }
   .toast-success { @apply border-emerald-300/20 bg-emerald-950/90 text-emerald-100; }
@@ -188,6 +228,10 @@ a { text-decoration: none; }
 @keyframes image-reveal { from { opacity: 0; transform: scale(1.02); } to { opacity: 1; transform: scale(1); } }
 @keyframes hero-reveal { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: scale(1); } }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
 @media (max-width: 640px) {
   .page-content { @apply py-6; }
   .hero-banner { @apply min-h-[450px] rounded-3xl p-6; }
@@ -198,10 +242,28 @@ a { text-decoration: none; }
   .hero-art-fallback span { @apply text-[12rem]; }
   .detail-hero { @apply rounded-3xl p-5; }
   .detail-copy h2 { @apply text-4xl; }
+  .detail-section { @apply p-5; }
+  .detail-facts { @apply grid-cols-1; }
   .history-header, .history-row { grid-template-columns: 1fr 100px; }
   .history-header span:last-child, .history-row a { display: none; }
   .table-header, .table-row { grid-template-columns: 1fr auto; }
   .table-header span:nth-child(2), .table-row > p { display: none; }
+  .admin-table-header { display: none; }
+  .admin-table-row, .admin-table--categories .admin-table-row, .admin-table--media .admin-table-row, .admin-table--archive .admin-table-row, .admin-table--users .admin-table-row { grid-template-columns: minmax(0,1fr) auto; gap: .75rem; }
+  .admin-table-row > :nth-child(2) { display: none; }
+  .admin-table-row > :last-child { grid-column: 1 / -1; justify-self: stretch; }
+  .admin-table-row > :last-child .btn, .admin-table-row > .btn:last-child { width: 100%; }
+  .admin-table-actions { justify-content: stretch; }
+  .admin-table-actions .btn { flex: 1; }
+  .admin-table-toolbar { @apply items-start px-5 py-4; }
+  .admin-table-toolbar > p { @apply w-full; }
+  .admin-movie-grid { @apply grid-cols-1; }
+  .admin-movie-card { @apply grid grid-cols-[104px_1fr] gap-x-4; }
+  .admin-movie-card .movie-card { @apply row-span-2; }
+  .admin-movie-card .movie-poster { @apply max-h-none; }
+  .admin-movie-card .movie-card > div:last-child { @apply hidden; }
+  .admin-movie-card-meta { @apply mt-0 self-end; }
+  .admin-movie-card .admin-table-actions { @apply col-start-2 mt-3; }
 }
 
 @media (min-width: 641px) and (max-width: 1023px) {

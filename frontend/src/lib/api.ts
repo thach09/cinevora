@@ -5,7 +5,7 @@ import type {
   ApiResponse, AuthResponse, Category, ContinueEntry, HistoryEntry, LoginRequest,
   Movie, MovieQuery, MovieRef, PageResponse, RegisterRequest, Statistics, User, Profile, AccountSession,
   MoviePreference, PreferenceSignal, Suggestion, SearchEntry, PopularSearch, HomeResponse,
-  MovieTrack, NotificationInbox,
+  MovieTrack, NotificationInbox, AdminNotificationRequest, NotificationDispatch,
 } from '../types/api'
 
 export const api = axios.create({
@@ -84,6 +84,7 @@ export const adminApi = {
   setMovieStatus: (id: number, active: boolean) => dataOf<Movie>(api.patch(`/admin/movies/${id}/status`, { active })),
   categories: (includeInactive = true) => dataOf<Category[]>(api.get('/admin/categories', { params: { includeInactive } })),
   setCategoryStatus: (id: number, active: boolean) => dataOf<Category>(api.patch(`/admin/categories/${id}/status`, { active })),
+  sendNotification: (payload: AdminNotificationRequest) => dataOf<NotificationDispatch>(api.post('/admin/notifications', payload)),
 }
 
 export const trackApi = {

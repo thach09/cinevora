@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { trackApi, userDataApi } from "../lib/api";
 import { Button } from "./ui";
+import { useI18n } from "../lib/i18n";
 
 type SubtitleTrack = {
   src: string;
@@ -44,6 +45,7 @@ export function VideoPlayer({
   onSaved?: () => void;
   subtitles?: SubtitleTrack[];
 }) {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastSavedAt = useRef(0);
   const lastSavedPosition = useRef(-1);
@@ -104,13 +106,13 @@ export function VideoPlayer({
         onSaved?.();
       } catch {
         setError(
-          "Progress could not be saved. We will retry on your next playback event.",
+          t("player.progressError"),
         );
       } finally {
         saveInFlight.current = false;
       }
     },
-    [mode, movieId, onSaved],
+    [mode, movieId, onSaved, t],
   );
 
   useEffect(() => {
@@ -144,8 +146,7 @@ export function VideoPlayer({
           />
         </div>
         <p className="video-caption-note mt-3">
-          Trailer hosted by YouTube. This promotional playback does not update
-          watch history or Continue Watching.
+          {t("player.trailerNotice")}
         </p>
       </div>
     );
@@ -155,8 +156,7 @@ export function VideoPlayer({
     return (
       <div className="video-player surface">
         <p className="video-error" role="status">
-          Watch Now requires a direct video source. YouTube links are supported
-          as trailers only.
+          {t("player.watchNeedsDirect")}
         </p>
       </div>
     );
@@ -219,7 +219,7 @@ export function VideoPlayer({
           setIsPlaying(false);
           void saveProgress(true);
         }}
-        onError={() => setError("This video source could not be loaded.")}
+        onError={() => setError(t("player.videoError"))}
       >
         {subtitles.map((track) => (
           <track
@@ -234,12 +234,12 @@ export function VideoPlayer({
       </video>
       <div className="video-toolbar">
         <Button type="button" variant="secondary" onClick={togglePlay}>
-          {isPlaying ? "Pause" : "Play"}
+          {isPlaying ? t("player.pause") : t("player.play")}
         </Button>
         <label className="video-time">
           {formatTime(currentTime)} / {formatTime(duration)}
           <input
-            aria-label="Seek video"
+            aria-label={t("player.seek")}
             type="range"
             min="0"
             max={duration || 0}
@@ -257,17 +257,17 @@ export function VideoPlayer({
             setMuted(!muted);
           }}
         >
-          {muted ? "Unmute" : "Mute"}
+          {muted ? t("player.unmute") : t("player.mute")}
         </Button>
         {mode === "WATCH" && audioTracks.length > 0 && (
           <label className="video-rate">
-            Audio
+            {t("player.audio")}
             <select
-              aria-label="Audio track"
+              aria-label={t("player.audioTrack")}
               value={selectedAudio?.id || ""}
               onChange={(event) => setAudioTrackId(Number(event.target.value))}
             >
-              <option value="">Original</option>
+              <option value="">{t("player.original")}</option>
               {audioTracks.map((track) => (
                 <option key={track.id} value={track.id}>
                   {track.label}
@@ -277,9 +277,9 @@ export function VideoPlayer({
           </label>
         )}
         <label className="video-rate">
-          Speed
+          {t("player.speed")}
           <select
-            aria-label="Playback speed"
+            aria-label={t("player.speedLabel")}
             value={rate}
             onChange={(event) => {
               const next = Number(event.target.value);
@@ -296,13 +296,13 @@ export function VideoPlayer({
         </label>
         {subtitles.length > 0 && (
           <span className="video-caption-note">
-            Subtitles available in player controls
+            {t("player.subtitles")}
           </span>
         )}
       </div>
       {mode === "TRAILER" && (
         <p className="video-caption-note mt-3">
-          Trailer playback does not update watch history or Continue Watching.
+          {t("player.trailerNotice")}
         </p>
       )}
       {error && (

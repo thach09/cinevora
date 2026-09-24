@@ -3,6 +3,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { useAuthStore } from './store/authStore'
 import { AppLayout } from './components/Layout'
 import { Spinner } from './components/ui'
+import { useI18n } from './lib/i18n'
 
 const LoginPage = lazy(() => import('./pages/AuthPages').then((module) => ({ default: module.LoginPage })))
 const RegisterPage = lazy(() => import('./pages/AuthPages').then((module) => ({ default: module.RegisterPage })))
@@ -23,6 +24,7 @@ const AdminArchivePage = lazy(() => import('./pages/AdminPages').then((module) =
 const AdminMediaPage = lazy(() => import('./pages/AdminPages').then((module) => ({ default: module.AdminMediaPage })))
 const AdminUserPage = lazy(() => import('./pages/AdminPages').then((module) => ({ default: module.AdminUserPage })))
 const AdminStatisticsPage = lazy(() => import('./pages/AdminPages').then((module) => ({ default: module.AdminStatisticsPage })))
+const AdminNotificationPage = lazy(() => import('./pages/AdminNotificationPage').then((module) => ({ default: module.AdminNotificationPage })))
 const AccountPage = lazy(() => import('./pages/AccountPage').then((module) => ({ default: module.AccountPage })))
 
 export function AppRoutes() {
@@ -51,6 +53,7 @@ export function AppRoutes() {
           <Route path="media" element={<AdminMediaPage />} />
           <Route path="users" element={<AdminUserPage />} />
           <Route path="statistics" element={<AdminStatisticsPage />} />
+          <Route path="notifications" element={<AdminNotificationPage />} />
         </Route>
       </Route>
     </Route>
@@ -58,7 +61,7 @@ export function AppRoutes() {
   </Routes></Suspense>
 }
 
-function ProtectedRoute() { const authenticated = useAuthStore((state) => Boolean(state.token && state.user)); return authenticated ? <Outlet /> : <Navigate to="/login" replace state={{ message: 'Sign in to continue.' }} /> }
+function ProtectedRoute() { const authenticated = useAuthStore((state) => Boolean(state.token && state.user)); const { t } = useI18n(); return authenticated ? <Outlet /> : <Navigate to="/login" replace state={{ message: t('auth.signIn') }} /> }
 function PublicOnly({ children }: { children: ReactNode }) { const user = useAuthStore((state) => state.user); return user ? <Navigate to={user.role === 'ADMIN' ? '/admin' : '/browse'} replace /> : children }
 function AdminRoute() { const role = useAuthStore((state) => state.user?.role); return role === 'ADMIN' ? <Outlet /> : <Navigate to="/browse" replace /> }
 function HomeRedirect() { const role = useAuthStore((state) => state.user?.role); return <Navigate to={role === 'ADMIN' ? '/admin' : '/browse'} replace /> }

@@ -103,7 +103,7 @@ test.describe('Cinevora Phase 4 final integration', () => {
     await page.getByPlaceholder('At least 8 characters').fill(`Phase4-${stamp}-Aa9!`)
     await page.getByRole('button', { name: 'Create account', exact: true }).click()
     await page.waitForURL('**/browse')
-    await expect(page.getByRole('heading', { name: 'A little something for everyone' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Choose your next film' })).toBeVisible()
 
     const firstCard = page.locator('a.movie-card').first()
     await expect(firstCard).toBeVisible()
@@ -293,5 +293,15 @@ test.describe('Cinevora Phase 4 final integration', () => {
       }
     }
     await expectNoDiagnostics(diagnostics)
+  })
+
+  test('locale selector translates seeded categories and persists the choice', async ({ page }) => {
+    await login(page, CUSTOMER.username, CUSTOMER.password)
+    await page.goto('/browse')
+    await page.getByLabel('Language').first().selectOption('vi')
+    await expect(page.getByRole('link', { name: 'Khám phá', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Hành động', exact: true })).toBeVisible()
+    await page.reload()
+    await expect(page.locator('html')).toHaveAttribute('lang', 'vi')
   })
 })

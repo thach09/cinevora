@@ -5,6 +5,7 @@ import {
   type ReactNode,
   type SelectHTMLAttributes,
 } from "react";
+import { useI18n } from "../lib/i18n";
 
 export function Button({
   children,
@@ -53,23 +54,23 @@ export const Select = forwardRef<
   return <select ref={ref} className="input" {...props} />;
 });
 
-export function Spinner({ label = "Loading" }: { label?: string }) {
+export function Spinner({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center justify-center gap-3 py-16 text-sm text-slate-400">
       <span className="spinner" />
-      {label}
+      {label || t("common.loading")}
     </div>
   );
 }
 
-export function QueryError({
-  message = "Unable to load this content.",
-}: {
+export function QueryError({ message }: {
   message?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className="surface flex min-h-40 items-center justify-center px-6 text-center text-sm text-rose-200">
-      {message}
+      {message || t("common.unavailable")}
     </div>
   );
 }
@@ -107,5 +108,40 @@ export function StatCard({
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+export function PageHeading({
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="page-heading">
+      <div>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 className="section-title mt-1">{title}</h2>
+        <p className="mt-2 max-w-2xl text-slate-400">{description}</p>
+      </div>
+      {actions && <div className="page-heading-actions">{actions}</div>}
+    </div>
+  );
+}
+
+export function StatusPill({ active, activeLabel = "Active", inactiveLabel = "Archived" }: {
+  active: boolean;
+  activeLabel?: string;
+  inactiveLabel?: string;
+}) {
+  return (
+    <span className={`status-pill ${active ? "status-pill-active" : "status-pill-inactive"}`}>
+      {active ? activeLabel : inactiveLabel}
+    </span>
   );
 }
