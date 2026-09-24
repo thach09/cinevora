@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
+import java.util.List;
+import com.cinevora.entity.Role;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsernameIgnoreCase(String username);
@@ -20,6 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsernameIgnoreCase(String username);
     boolean existsByEmailIgnoreCase(String email);
     long countByActiveTrue();
+    List<User> findByRoleAndActiveTrue(Role role);
     @Query(value = "select u from User u where (:q = '' or lower(u.username) like lower(concat('%', :q, '%')) or lower(u.email) like lower(concat('%', :q, '%')) or lower(u.fullName) like lower(concat('%', :q, '%'))) and (:active is null or u.active = :active)", countQuery = "select count(u) from User u where (:q = '' or lower(u.username) like lower(concat('%', :q, '%')) or lower(u.email) like lower(concat('%', :q, '%')) or lower(u.fullName) like lower(concat('%', :q, '%'))) and (:active is null or u.active = :active)")
     Page<User> searchAdmin(@Param("q") String q, @Param("active") Boolean active, Pageable pageable);
 }

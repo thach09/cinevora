@@ -3,6 +3,8 @@ package com.cinevora.config;
 import com.cinevora.dto.AuthDtos;
 import com.cinevora.entity.*;
 import com.cinevora.repository.UserRepository;
+import com.cinevora.repository.NotificationRepository;
+import com.cinevora.security.JwtService;
 import com.cinevora.service.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -33,6 +35,8 @@ class SecurityIntegrationTest {
     @Autowired SessionService sessions;
     @Autowired AuthService auth;
     @Autowired UserRepository users;
+    @Autowired NotificationRepository notifications;
+    @Autowired JwtService jwt;
     @Autowired TestRestTemplate http;
 
     @Test void simultaneousRefreshHasExactlyOneWinnerAndOldTokenCannotReplay() throws Exception {
@@ -107,5 +111,31 @@ class SecurityIntegrationTest {
         auth.setContentType(MediaType.TEXT_PLAIN);
         assertEquals(415, http.exchange("/api/v1/users/me/profiles", HttpMethod.POST, new HttpEntity<>("name=test", auth), Map.class).getStatusCode().value());
 
+    }
+
+    @Test void adminMessagesAreAuthorizedIsolatedAndDeliveredToCustomerInbox() {
+        User admin = users.findByUsernameIgnoreCase("admin").orElseThrow();
+        User customer = users.findByUsernameIgnoreCase("thietthach09").orElseThrow();
+        User otherCustomer = users.findByUsernameIgnoreCase("messi10").orElseThrow();
+        User inactiveCustomer = users.findByUsernameIgnoreCase("cristiano07").orElseThrow();
+        inactiveCustomer.setActive(false); users.save(inactiveCustomer);
+        var adminHeaders = new HttpHeaders(); adminHeaders.setBearerAuth(jwt.generate(admin));
+        var customerHeaders = new HttpHeaders(); customerHeaders.setBearerAuth(jwt.generate(customer));
+        adminHeaders.setContentType(MediaType.APPLICATION_JSON); customerHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        assertEquals(403, http.exchange("/api/v1/admin/notifications", HttpMethod.POST,
+                new HttpEntity<>(Map.of("recipientUsername", customer.getUsername(), "broadcastToActiveCustomers", false, "title", "Private", "body", "Only this customer"), customerHeaders), Map.class).getStatusCode().value());
+        assertEquals(400, http.exchange("/api/v1/admin/notifications", HttpMethod.POST,
+                new HttpEntity<>(Map.of("broadcastToActiveCustomers", true, "title", "Unsafe", "body", "Rejected", "actionUrl", "javascript:alert(1)"), adminHeaders), Map.class).getStatusCode().value());
+        assertEquals(200, http.exchange("/api/v1/admin/notifications", HttpMethod.POST,
+                new HttpEntity<>(Map.of("recipientUsername", customer.getUsername(), "broadcastToActiveCustomers", false, "title", "Private", "body", "Only this customer", "actionUrl", "/browse"), adminHeaders), Map.class).getStatusCode().value());
+        assertTrue(notifications.findTop20ByUser_IdOrderByCreatedAtDesc(customer.getId()).stream().anyMatch(n -> n.getKind().equals("ADMIN_MESSAGE") && n.getTitle().equals("Private")));
+        assertFalse(notifications.findTop20ByUser_IdOrderByCreatedAtDesc(otherCustomer.getId()).stream().anyMatch(n -> n.getTitle().equals("Private")));
+        var broadcast = http.exchange("/api/v1/admin/notifications", HttpMethod.POST,
+                new HttpEntity<>(Map.of("broadcastToActiveCustomers", true, "title", "Broadcast", "body", "Active customers only"), adminHeaders), Map.class);
+        assertEquals(200, broadcast.getStatusCode().value());
+        assertEquals(9, ((Map<?, ?>) broadcast.getBody().get("data")).get("recipientCount"));
+        assertTrue(notifications.findTop20ByUser_IdOrderByCreatedAtDesc(customer.getId()).stream().anyMatch(n -> n.getTitle().equals("Broadcast")));
+        assertFalse(notifications.findTop20ByUser_IdOrderByCreatedAtDesc(inactiveCustomer.getId()).stream().anyMatch(n -> n.getTitle().equals("Broadcast")));
     }
 }
