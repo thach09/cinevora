@@ -40,6 +40,13 @@ services:
         sync: false
       - key: CORS_ALLOWED_ORIGINS
         sync: false
+      # Set to the exact HTTPS frontend origin on the same site as the API.
+      - key: BOOTSTRAP_ADMIN_USERNAME
+        sync: false
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
       - key: MEDIA_STORAGE
         value: s3
       - key: MEDIA_S3_ENDPOINT

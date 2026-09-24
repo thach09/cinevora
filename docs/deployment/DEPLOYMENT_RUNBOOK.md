@@ -25,6 +25,9 @@ DB_PASSWORD=...
 DB_SSL_MODE=require
 JWT_SECRET=<random 48+ byte value>
 CORS_ALLOWED_ORIGINS=https://<frontend-origin>
+BOOTSTRAP_ADMIN_USERNAME=<unique-owner-username>
+BOOTSTRAP_ADMIN_EMAIL=<unique-owner-email>
+BOOTSTRAP_ADMIN_PASSWORD=<strong-one-time-secret>
 MEDIA_STORAGE=s3
 MEDIA_S3_ENDPOINT=https://<account>.r2.cloudflarestorage.com
 MEDIA_S3_REGION=auto
@@ -34,7 +37,9 @@ MEDIA_S3_ACCESS_KEY=...
 MEDIA_S3_SECRET_KEY=...
 ```
 
-The guard refuses a dev profile, weak or known demo JWT secret, wildcard/local CORS, development token exposure, public Swagger, local media storage, missing object-storage settings, and verbose production logging.
+The guard refuses a dev profile, weak or known demo JWT secret, wildcard/local CORS, development token exposure, public Swagger, local media storage, missing object-storage settings, and verbose production logging. The first production boot also fails closed unless all three `BOOTSTRAP_ADMIN_*` variables are supplied. Set these manually in the provider secret manager, never in Git or a build argument. Choose a new username (8–50 letters/digits/underscores) and unique email; the password must be at least 20 characters, at most 72 UTF-8 bytes, contain at least 12 distinct characters, and must not contain “cinevora”. A missing, weak or duplicate identity aborts the transaction and startup.
+
+The bootstrap runs once, disables the 11 seeded demo identities, revokes their sessions and records `security_bootstrap.completed_at`/`admin_user_id`. Verify the marker and zero active demo IDs through a restricted database/operator channel, then confirm the new ADMIN can log in and the demo ADMIN cannot. On later restarts the bootstrap is not repeated, so rotate the new admin password through the authenticated account flow and rotate/remove the one-time secret in the provider secret manager. For lost admin access, use a reviewed recovery procedure against a backup/disposable copy before applying any production data change; do not clear the marker or re-enable demo identities.
 
 Vercel needs the build-time variable:
 
@@ -42,14 +47,16 @@ Vercel needs the build-time variable:
 VITE_API_URL=https://<backend-origin>/api/v1
 ```
 
+The current `Secure; HttpOnly; SameSite=Lax` auth cookies **require a same-site frontend and API**. Use controlled HTTPS hostnames such as `https://cinevora.example` and `https://api.cinevora.example`, or an approved same-origin `/api` proxy. `FRONTEND_ORIGIN`, `BACKEND_ORIGIN`, `CORS_ALLOWED_ORIGINS` and built `VITE_API_URL` must describe that exact pair. Raw `*.vercel.app` plus `*.onrender.com`/`*.up.railway.app` is not a supported final production pair: a browser withholds the CSRF/refresh cookies. Do not relax SameSite, HttpOnly or token transport to compensate. No real domain has been selected, so public authentication remains unverified. The release gate must run the real-browser auth test against the selected hostnames before public release.
+
 ## Cloud creation order
 
 1. Create PostgreSQL and record its private connection properties. Do not expose PostgreSQL publicly.
-2. Create the Render Web Service from `render.yaml`, set all `sync: false` values, and configure `/actuator/health` as the HTTP health check.
+2. Attach the intended same-site API HTTPS hostname, create the Render Web Service from `render.yaml`, set all `sync: false` values including the three bootstrap secrets, and configure `/actuator/health` as the HTTP health check.
 3. Wait for the backend health check and Flyway migration to complete.
-4. Create the Vercel project rooted at `frontend/`, set `VITE_API_URL`, and deploy the tested commit.
-5. Replace `CORS_ALLOWED_ORIGINS` with the exact Vercel HTTPS origin, then redeploy the backend.
-6. Run public verification and production browser E2E with a disposable demo account. Delete or archive test content afterward.
+4. Attach the matching frontend HTTPS hostname to the Vercel project rooted at `frontend/`, set `VITE_API_URL` to the API hostname, and deploy the tested commit.
+5. Set `CORS_ALLOWED_ORIGINS` to the exact frontend HTTPS origin, then redeploy the backend.
+6. Run public verification and the Playwright `public-auth-topology.spec.ts` browser gate using a disposable non-demo account. Verify login, cookie flags, refresh, reload, protected access and logout. Delete or archive test content afterward. A failed browser gate blocks release even if HTTP health and CORS pass.
 
 The checked-in deploy workflow remains disabled until the repository variable `DEPLOY_ENABLED=true` is explicitly set. It requires `RENDER_API_KEY`, `RENDER_SERVICE_ID`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `BACKEND_ORIGIN` and `FRONTEND_ORIGIN` in the production environment. Render deployment is pinned to the exact Git commit and health-checked before frontend deployment.
 

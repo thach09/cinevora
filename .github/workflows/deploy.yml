@@ -22,6 +22,7 @@ jobs:
     env:
       RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
       BACKEND_ORIGIN: ${{ vars.BACKEND_ORIGIN }}
+      FRONTEND_ORIGIN: ${{ vars.FRONTEND_ORIGIN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
@@ -36,6 +37,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: test "$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)" = "$RELEASE_SHA"
+      - name: Refuse unsupported public auth topology
+        env:
+          CINEVORA_RELEASE_USERNAME: ${{ secrets.CINEVORA_RELEASE_USERNAME }}
+          CINEVORA_RELEASE_PASSWORD: ${{ secrets.CINEVORA_RELEASE_PASSWORD }}
+        run: node tools/deployment/check-public-auth-env.mjs
       - name: Deploy backend and wait for the exact commit
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -50,6 +56,18 @@ jobs:
           --prod --yes --token "$VERCEL_TOKEN"
           --build-env "VITE_API_URL=$BACKEND_ORIGIN/api/v1"
       - name: Check public frontend and production CORS
-        env:
-          FRONTEND_ORIGIN: ${{ vars.FRONTEND_ORIGIN }}
         run: node tools/deployment/verify-public.mjs
+      - name: Install production browser gate
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Verify public auth in a real browser
+        working-directory: frontend
+        env:
+          CINEVORA_PUBLIC_AUTH: '1'
+          CINEVORA_FRONTEND_URL: ${{ vars.FRONTEND_ORIGIN }}
+          CINEVORA_API_URL: ${{ vars.BACKEND_ORIGIN }}/api/v1
+          CINEVORA_RELEASE_USERNAME: ${{ secrets.CINEVORA_RELEASE_USERNAME }}
+          CINEVORA_RELEASE_PASSWORD: ${{ secrets.CINEVORA_RELEASE_PASSWORD }}
+        run: npx playwright test tests/e2e/public-auth-topology.spec.ts
