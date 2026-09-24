@@ -6,6 +6,9 @@ This runbook deploys the exact tested commit. It does not reset databases, edit 
 
 ```powershell
 Copy-Item .env.example .env
+# The isolated CI compose file requires disposable values from the shell.
+$env:CINEVORA_CI_DB_PASSWORD = [guid]::NewGuid().ToString('N')
+$env:CINEVORA_CI_JWT_SECRET = ([guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N'))
 docker compose --env-file compose.ci.env config --quiet
 docker compose --env-file compose.ci.env up --build -d --wait --wait-timeout 180
 docker compose --env-file compose.ci.env --profile tools run --rm flyway validate

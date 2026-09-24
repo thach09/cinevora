@@ -15,6 +15,48 @@ assert(adminName && customerName && adminPassword && customerPassword, 'Supply d
 const stateFile = process.env.CINEVORA_MEDIA_STATE_FILE || '.tmp/phase5/media-restart-state.json'
 const origin = process.env.CINEVORA_ALLOWED_ORIGIN || new URL(frontend).origin
 
+function createSession() { return { cookies: new Map() } }
+function cookieHeader(session) { return [...session.cookies.values()].join('; ') }
+function updateCookies(session, response) {
+  const setCookies = response.headers.getSetCookie?.() || []
+  for (const value of setCookies) {
+    const [pair, ...attributes] = value.split(';')
+    const equals = pair.indexOf('=')
+    if (equals < 1) continue
+    const name = pair.slice(0, equals)
+    const expired = attributes.some((attribute) => /^\s*max-age=0\s*$/i.test(attribute))
+    if (expired) session.cookies.delete(name)
+    else session.cookies.set(name, pair)
+  }
+}
+async function csrf(session) {
+  const headers = {}
+  const cookies = cookieHeader(session)
+  if (cookies) headers.Cookie = cookies
+  const response = await fetch(`${api}/auth/csrf`, { headers, signal: AbortSignal.timeout(30_000) })
+  updateCookies(session, response)
+  assert.equal(response.status, 200, 'GET /auth/csrf')
+  const result = await response.json()
+  assert.equal(result.success, true)
+  return result.data
+}
+async function authCall(session, path, { method = 'POST', data, expected = 200, raw = false } = {}) {
+  const proof = await csrf(session)
+  const headers = { [proof.headerName]: proof.token }
+  const cookies = cookieHeader(session)
+  if (cookies) headers.Cookie = cookies
+  if (data !== undefined) headers['Content-Type'] = 'application/json'
+  const response = await fetch(`${api}${path}`, {
+    method, headers, body: data === undefined ? undefined : JSON.stringify(data), signal: AbortSignal.timeout(30_000),
+  })
+  updateCookies(session, response)
+  assert.equal(response.status, expected, `${method} ${path}`)
+  if (raw) return response
+  const result = await response.json()
+  if (expected < 300) assert.equal(result.success, true)
+  return result.data
+}
+
 async function call(path, { method = 'GET', token, data, headers = {}, expected = 200, raw = false } = {}) {
   const response = await fetch(path.startsWith('http') ? path : api + path, {
     method, headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(data ? { 'Content-Type': 'application/json' } : {}), ...headers },
@@ -27,7 +69,8 @@ async function call(path, { method = 'GET', token, data, headers = {}, expected 
   return result.data
 }
 async function login(username, password) {
-  return call('/auth/login', { method: 'POST', data: { username, password } })
+  const session = createSession()
+  return { ...await authCall(session, '/auth/login', { data: { username, password } }), session }
 }
 async function archive(movieId, token) {
   await call(`/admin/movies/${movieId}/status`, { method: 'PATCH', token, data: { active: false } })
@@ -72,17 +115,18 @@ try {
     const health = await call(new URL('/actuator/health', api).href, { raw: true })
     assert.deepEqual(await health.json(), { status: 'UP' })
     console.log('PASS health 200, status only')
-    await call('/users/me', { expected: 403, raw: true })
-    await call('/users/me', { token: 'malformed.jwt', expected: 403, raw: true })
+    await call('/users/me', { expected: 401, raw: true })
+    await call('/users/me', { token: 'malformed.jwt', expected: 401, raw: true })
     await call('/statistics', { token: customer.token, expected: 403 })
     await call('/statistics', { token: admin.token })
     const otherProfiles = await call('/users/me/profiles', { token: admin.token })
     await call('/users/me/watchlist', { token: customer.token, headers: { 'X-Profile-Id': String(otherProfiles[0].id) }, expected: 404 })
-    const rotated = await call('/auth/refresh', { method: 'POST', data: { refreshToken: customer.refreshToken } })
-    await call('/auth/refresh', { method: 'POST', data: { refreshToken: customer.refreshToken }, expected: 400 })
-    await call('/auth/logout', { method: 'POST', data: { refreshToken: rotated.refreshToken } })
-    await call('/auth/refresh', { method: 'POST', data: { refreshToken: rotated.refreshToken }, expected: 400 })
-    console.log('PASS anonymous/malformed JWT=403, CUSTOMER admin=403, ADMIN=200, foreign profile=404, rotated/revoked refresh=400')
+    const replay = { cookies: new Map(customer.session.cookies) }
+    await authCall(customer.session, '/auth/refresh')
+    await authCall(replay, '/auth/refresh', { expected: 401, raw: true })
+    await authCall(customer.session, '/auth/logout')
+    await authCall(customer.session, '/auth/refresh', { expected: 401, raw: true })
+    console.log('PASS anonymous/malformed JWT=401, CUSTOMER admin=403, ADMIN=200, foreign profile=404, rotated/revoked refresh=401')
     for (const allowed of [true, false]) {
       const cors = await call('/users/me', { method: 'OPTIONS', expected: allowed ? 200 : 403, raw: true, headers: {
         Origin: allowed ? origin : 'https://random-origin.invalid', 'Access-Control-Request-Method': 'GET',
@@ -101,7 +145,7 @@ try {
     } })
     let prepared = false
     try {
-      await upload(movie.id, undefined, png, 'image/png', 403)
+      await upload(movie.id, undefined, png, 'image/png', 401)
       await upload(movie.id, customer.token, png, 'image/png', 403)
       await upload(movie.id, admin.token, Buffer.from('<svg/>'), 'image/png', 400)
       await upload(movie.id, admin.token, png, 'image/jpeg', 400)
@@ -125,12 +169,12 @@ try {
     const loginTimes = []
     for (let i = 0; i < 6; i++) {
       const start = performance.now(); const session = await login(customerName, customerPassword); loginTimes.push(performance.now() - start)
-      await call('/auth/logout', { method: 'POST', data: { refreshToken: session.refreshToken } })
+      await authCall(session.session, '/auth/logout')
     }
     loginTimes.sort((a, b) => a - b)
     metrics.push({ name: 'login', samples: 6, p50: +loginTimes[2].toFixed(2), p95: +loginTimes[5].toFixed(2), max: +loginTimes[5].toFixed(2) })
     console.log(JSON.stringify({ environment: local ? 'local (not cloud SLA)' : 'deployed warm', unit: 'ms', metrics }, null, 2))
   }
 } finally {
-  for (const auth of [admin, customer]) await call('/auth/logout', { method: 'POST', data: { refreshToken: auth.refreshToken } })
+  for (const auth of [admin, customer]) await authCall(auth.session, '/auth/logout')
 }
