@@ -58,14 +58,16 @@ như nguyên vẹn, chỉ thêm annotation JPA.
   xác nhận Docker Desktop/PostgreSQL 16.15, Flyway version 2, ST1/ST3/ST4/ST6/ST7/ST8 PASS;
   ST2/ST5 phụ thuộc DB fresh và không chạy lại kết quả seed vì database hiện giữ
   các record smoke/manual đã archive.
-- Phase 2 (Backend Spring Boot) — xong và đã verify runtime. Spring Boot 3.4.5,
+- Phase 2 (Backend Spring Boot) — xong và đã verify runtime. Spring Boot 3.5.16,
   Java 21, REST API /api/v1, JWT/Security, Swagger/OpenAPI, Flyway/JPA,
-  CORS và CRUD smoke đều PASS; backend tests hiện có 2/2 test PASS.
+  CORS và CRUD smoke đều PASS; bộ test hiện tại được cập nhật trong báo cáo remediation.
 - Phase 3 (Frontend React) — xong và đã verify. Vite 6.4.3, React Router 7.18.4,
   production build PASS, npm audit báo 0 vulnerabilities, Vite runtime HTTP 200.
-- Phase 4 (Integration & Testing) — chưa bắt đầu; là phase tiếp theo.
+- Phase 4 và Phase 5 đã có báo cáo tích hợp/deployment local. Phase 6 đã qua audit độc lập;
+  sáu finding FQA đã remediation và verify local, public production chưa được xác minh.
 
-Báo cáo master hiện tại: docs/verification/MASTER_CHECK_PHASE_1_3.md.
+Báo cáo hiện tại: docs/verification/FINAL_REMEDIATION_REPORT.md và
+docs/verification/FINAL_INDEPENDENT_QA_SECURITY_AUDIT.md. Migration hiện tại: V10.
 
 ## Quy tắc làm việc bắt buộc
 
