@@ -28,6 +28,7 @@ class SecurityIntegrationTest {
         r.add("spring.datasource.url", () -> url);
         r.add("spring.datasource.username", () -> System.getenv("CINEVORA_TEST_DATABASE_USER"));
         r.add("spring.datasource.password", () -> System.getenv("CINEVORA_TEST_DATABASE_PASSWORD"));
+        r.add("app.jwt.secret", () -> UUID.randomUUID() + "-" + UUID.randomUUID() + "abcdefghijklmnop");
     }
     @Autowired SessionService sessions;
     @Autowired AuthService auth;
