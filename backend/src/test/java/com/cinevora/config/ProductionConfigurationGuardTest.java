@@ -1,8 +1,11 @@
 package com.cinevora.config;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.env.MockEnvironment;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,6 +32,24 @@ class ProductionConfigurationGuardTest {
     @Test void secureConfigurationPassesAndDevRemainsConvenient() {
         assertDoesNotThrow(() -> ProductionConfigurationGuard.validate(valid()));
         assertDoesNotThrow(() -> ProductionConfigurationGuard.validate(new MockEnvironment()));
+    }
+
+    @Test void renderDatabaseVariablesResolveToHostPortJdbcUrl() throws IOException {
+        var source = new YamlPropertySourceLoader()
+                .load("application-prod", new ClassPathResource("application-prod.yml"))
+                .get(0);
+        var env = new MockEnvironment()
+                .withProperty("DB_HOST", "render-db.internal")
+                .withProperty("DB_PORT", "5432")
+                .withProperty("DB_NAME", "cinevora");
+
+        var template = source.getProperty("spring.datasource.url");
+        assertNotNull(template);
+        var resolved = env.resolveRequiredPlaceholders(template.toString());
+
+        assertEquals("jdbc:postgresql://render-db.internal:5432/cinevora", resolved);
+        assertFalse(resolved.contains("render-db.internal/5432"));
+        assertDoesNotThrow(() -> ProductionConfigurationGuard.validate(valid().withProperty("spring.datasource.url", resolved)));
     }
 
     @Test void cloudCannotDefaultToDev() {
