@@ -43,6 +43,7 @@ class DataIntegrityConcurrencyTest {
         registry.add("spring.datasource.url", () -> url);
         registry.add("spring.datasource.username", () -> System.getenv("CINEVORA_TEST_DATABASE_USER"));
         registry.add("spring.datasource.password", () -> System.getenv("CINEVORA_TEST_DATABASE_PASSWORD"));
+        registry.add("app.jwt.secret", () -> UUID.randomUUID() + "-" + UUID.randomUUID() + "abcdefghijklmnop");
     }
 
     @Autowired UserRepository users;
